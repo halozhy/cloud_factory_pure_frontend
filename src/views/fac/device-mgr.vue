@@ -1,0 +1,697 @@
+<template>
+  <div class="app-container">
+    <div class="filter-container" style="margin-bottom: 1rem">
+      <el-input v-model="listQuery.id" placeholder="ID" style="width: 150px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.name" placeholder="设备名称" style="width: 150px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.describe" placeholder="设备描述" style="width: 150px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+        查找
+      </el-button>
+      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-refresh" @click="handleReFresh">
+        重置
+      </el-button>
+      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleCreate">
+        添加
+      </el-button>
+      <el-button class="filter-item" style="margin-left: 10px;" type="" icon="el-icon-plus" @click="handleListRent">
+        租用
+      </el-button>
+      <!-- <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
+        Export
+      </el-button> -->
+      <!-- <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
+        reviewer
+      </el-checkbox> -->
+    </div>
+
+    <el-table
+      :key="tableKey"
+      v-loading="listLoading"
+      :data="list"
+      border
+      fit
+      highlight-current-row
+      style="width: 100%;"
+    >
+      <template slot="empty">
+        暂无数据
+      </template>
+      <el-table-column label="ID" prop="id" sortable align="center" min-width="80">
+        <template slot-scope="{row}">
+          <span>{{ row.id }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="设备名称" min-width="100px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.name }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="设备描述" min-width="100px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.describe }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="设备规格" min-width="100px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.spec }}</span>
+          <!-- <span class="link-type" @click="handleUpdate(row)">{{ row.title }}</span>
+          <el-tag>{{ row.name | typeFilter }}</el-tag> -->
+        </template>
+      </el-table-column>
+      <el-table-column label="设备状态" min-width="100px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.state }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="设备类型" min-width="100px" align="center">
+        <template slot-scope="{row}">
+          <span>{{ row.type_name }}</span>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="所属部门" width="120px" align="center">
+        <template slot-scope="{row}">
+
+          <el-tag>{{ row.dept_name }}</el-tag>
+          <!-- <span>{{ row.type }}</span> -->
+        </template>
+      </el-table-column>
+      <el-table-column label="租用状态" width="110px" align="center">
+        <template slot-scope="{row}">
+
+          <span v-if="row.rent_rec_id != null ">已租用</span>
+          <span v-else-if="row.dept_name ==='自有' ">工厂自有</span>
+          <span v-else>未租用</span>
+        </template>
+      </el-table-column>
+
+      <el-table-column label="操作" align="center" min-width="250px" class-name="small-padding fixed-width">
+        <template slot-scope="{row,$index}">
+          <el-button v-if="row.state === '关机'" size="mini" type="" @click="handleOpen(row)">
+            开机
+          </el-button>
+          <el-button v-if="row.state === '闲置' || row.state === '开机' " size="mini" type="" @click="handleShutdown(row,$index)">
+            关机
+          </el-button>
+          <el-button type="primary" size="mini" @click="handleUpdate(row)">
+            更改
+          </el-button>
+          <!-- <el-button v-if="row.status!='published'" size="mini" type="success" @click="handleModifyStatus(row,'published')">
+            Publish
+          </el-button>
+          <el-button v-if="row.status!='draft'" size="mini" @click="handleModifyStatus(row,'draft')">
+            Draft
+          </el-button> -->
+          <el-button v-if="row.dept_name === '中心'" size="mini" @click="handleDisRent(row,$index)">
+            解租
+          </el-button>
+          <el-button v-if="row.dept_name === '自有'" size="mini" type="danger" @click="handleDelete(row,$index)">
+            删除
+          </el-button>
+          <el-button size="mini" type="primary" @click="handleConfCap(row,$index)">
+            产能
+          </el-button>
+          <!-- <el-button v-if="row.dept_name === '自有'" size="mini" type="danger" @click="handleDelete(row,$index)">
+            配置产能
+          </el-button> -->
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+
+    <el-dialog title="添加" :visible.sync="dialogFormVisible">
+
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
+        <el-form-item label="设备名称">
+          <el-input v-model="temp.name" />
+        </el-form-item>
+        <el-form-item label="设备描述">
+          <el-input v-model="temp.describe" />
+        </el-form-item>
+        <el-form-item label="设备规格">
+          <el-input v-model="temp.spec" />
+        </el-form-item>
+        <el-form-item label="设备类型">
+          <el-select v-model="temp.type_id" placeholder="请选择">
+            <el-option
+              v-for="item in device_type_all"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="所属部门">
+          <el-radio-group v-model="temp.dept_name">
+            <el-radio v-if="user_type === '云工厂管理员'" label="自有">自有</el-radio>
+            <el-radio v-if="user_type === '超级管理员'" label="中心">中心</el-radio>
+          </el-radio-group>
+        </el-form-item>
+
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">
+          取消
+        </el-button>
+        <el-button type="primary" @click="createData()">
+          确认
+        </el-button>
+      </div>
+    </el-dialog>
+
+    <el-dialog title="更改" :visible.sync="dialogUpdateFormVisible">
+
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
+        <el-form-item label="设备名称">
+          <el-input v-model="temp.name" />
+        </el-form-item>
+        <el-form-item label="设备描述">
+          <el-input v-model="temp.describe" />
+        </el-form-item>
+        <el-form-item label="设备规格">
+          <el-input v-model="temp.spec" />
+        </el-form-item>
+        <el-form-item label="设备类型">
+          <el-select v-model="temp.type_id" placeholder="请选择">
+            <el-option
+              v-for="item in device_type_all"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="所属部门">
+          <el-radio-group v-model="temp.dept_name">
+            <el-radio :label="temp.dept_name">{{ temp.dept_name }}</el-radio>
+
+          </el-radio-group>
+        </el-form-item>
+
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogUpdateFormVisible = false">
+          取消
+        </el-button>
+        <el-button type="primary" @click="updateData()">
+          确认
+        </el-button>
+      </div>
+    </el-dialog>
+
+    <el-dialog title="租用" :visible.sync="dialogRentFormVisible" class="pub_dialog" top="0">
+      <el-table :data="listRentable" border fit highlight-current-row style="width: 100%" max-height="400">
+        <el-table-column label="ID" prop="id" sortable align="center" min-width="80">
+          <template slot-scope="{row}">
+            <span>{{ row.id }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="设备名称" min-width="100px" align="center">
+          <template slot-scope="{row}">
+            <span>{{ row.name }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="设备描述" min-width="100px" align="center">
+          <template slot-scope="{row}">
+            <span>{{ row.describe }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="设备规格" min-width="100px" align="center">
+          <template slot-scope="{row}">
+            <span>{{ row.spec }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" align="center" min-width="100px" class-name="small-padding fixed-width">
+          <template slot-scope="{row}">
+            <el-button size="mini" type="primary" @click="handleRent(row)">
+              租用
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <el-dialog title="确认租用" :visible.sync="dialogConfirmRentFormVisible" append-to-body>
+        <el-form ref="dataForm" :model="rentConfirm" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
+          <el-form-item label="选择到期时间">
+            <el-date-picker
+              v-model="expireTime"
+              type="datetime"
+              placeholder=""
+              :picker-options="pickerOptions"
+            />
+          </el-form-item>
+        </el-form>
+        <span slot="footer" class="dialog-footer">
+          <el-button size="mini" type="primary" @click="rentDevice()">
+            确认租用
+          </el-button>
+          <el-button size="mini" type="" @click="dialogConfirmRentFormVisible = false">关闭</el-button>
+        </span>
+      </el-dialog>
+
+      <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="dialogRentFormVisible = false">关闭</el-button>
+      </span>
+    </el-dialog>
+
+    <el-dialog title="配置产能" :visible.sync="dialogConfCapVisible" top="15vh">
+      <DeviceCapMgr :device-id="selectedRow.id" />
+    </el-dialog>
+
+  </div>
+</template>
+
+<script>
+// import { fetchList, fetchPv, createArticle, updateArticle } from '@/api/article'
+import waves from '@/directive/waves' // waves directive
+import { parseTime } from '@/utils'
+import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+import jsCookie from 'js-cookie'
+import DeviceCapMgr from '../device-cap/device-cap-mgr'
+
+const calendarTypeOptions = [
+  { key: 'CN', display_name: 'China' },
+  { key: 'US', display_name: 'USA' },
+  { key: 'JP', display_name: 'Japan' },
+  { key: 'EU', display_name: 'Eurozone' }
+]
+
+// arr to obj, such as { CN : "China", US : "USA" }
+const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
+  acc[cur.key] = cur.display_name
+  return acc
+}, {})
+
+export default {
+  name: 'DeviceMgr',
+  components: { Pagination, DeviceCapMgr },
+  directives: { waves },
+  filters: {
+    statusFilter(status) {
+      const statusMap = {
+        published: 'success',
+        draft: 'info',
+        deleted: 'danger'
+      }
+      return statusMap[status]
+    },
+    typeFilter(type) {
+      return calendarTypeKeyValue[type]
+    }
+  },
+  data() {
+    return {
+      device_type_all: [{
+        id: '0',
+        name: 'test'
+      }],
+      user_id: '',
+      user_type: '',
+      tableKey: 0,
+      list: null,
+      listRentable: [],
+      total: 0,
+      listLoading: true,
+      listQuery: {
+        id: '',
+        name: '',
+        describe: '',
+        page: 1,
+        limit: 20,
+        importance: undefined,
+        title: undefined,
+        type: undefined,
+        sort: '+id'
+      },
+      importanceOptions: [1, 2, 3],
+      calendarTypeOptions,
+      sortOptions: [{ label: 'ID 升序', key: '+id' }, { label: 'ID 降序', key: '-id' }],
+      statusOptions: ['published', 'draft', 'deleted'],
+      showReviewer: false,
+      temp: {
+        username: '',
+        password: '',
+        name: '',
+        contact: '',
+        type: 1,
+        fac_name: '',
+        fac_describe: ''
+      },
+      dialogFormVisible: false,
+      dialogStatus: '',
+      textMap: {
+        update: '更改',
+        create: '添加'
+      },
+      dialogRentFormVisible: false,
+      dialogUpdateFormVisible: false,
+      dialogConfirmRentFormVisible: false,
+      rentConfirm: { expireTime: '' },
+      expireTime: '',
+      pickerOptions: {},
+      selectedRentDeviceId: '',
+      dialogConfCapVisible: false,
+      selectedRow: '',
+      pvData: [],
+      rules: {
+        type: [{ required: true, message: 'type is required', trigger: 'change' }],
+        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
+        title: [{ required: true, message: 'title is required', trigger: 'blur' }]
+      },
+      downloadLoading: false
+    }
+  },
+  created() {
+    this.user_id = jsCookie.get('userId')
+    this.user_type = jsCookie.get('type')
+    // this.getList()
+    this.pickerOptions = {
+      disabledDate(time) {
+        return time.getTime() <= new Date().getTime()
+      }
+    }
+    this.$axios.get('/api/fac/is_open', { params: { 'userId': this.user_id }}).then(r => {
+      // alert(r)
+      if (r.data !== 0) {
+        this.$message.error('工厂被关停，不可管理设备')
+        this.$router.push('/')
+      } else {
+        this.getList()
+      }
+    })
+  },
+  methods: {
+    getList() {
+      this.listLoading = true
+      // this.list = response.data.items
+      this.listQuery.user_id = this.user_id
+      this.$axios.post('/api/device/list_fac', this.listQuery).then(r => {
+        this.list = r.data.data
+        // this.list = this.temp
+        console.log(r.data)
+        this.total = r.data.count
+        this.listLoading = false
+      })
+    },
+    handleFilter() {
+      this.listQuery.page = 1
+      this.getList()
+    },
+    handleModifyStatus(row, status) {
+      this.$message({
+        message: '操作Success',
+        type: 'success'
+      })
+      row.status = status
+    },
+    resetTemp() {
+      this.temp = {
+        id: '',
+        name: '',
+        spec: '',
+        describe: '',
+        state: '',
+        dept_name: '',
+        type_id: '',
+        type_name: '',
+        fac_id: '',
+        fac_name: '',
+        rent_rec_id: ''
+      }
+    },
+    handleCreate() {
+      this.$axios.get('api/device_type/list_all').then(r => {
+        // console.log(r.data)
+        this.device_type_all = r.data
+        this.resetTemp()
+        this.dialogStatus = 'create'
+        this.dialogFormVisible = true
+        if (this.user_type === '云工厂管理员') {
+          this.temp.dept_name = '自有'
+        } else if (this.user_type === '超级管理员') {
+          this.temp.dept_name = '中心'
+        }
+        this.$nextTick(() => {
+          this.$refs['dataForm'].clearValidate()
+        })
+      })
+    },
+    createData() {
+      this.temp.user_id = this.user_id
+      this.$axios.post('/api/device/add', this.temp).then(r => {
+        console.log(r)
+        if (r.data === -2) {
+          this.$message.error('表单未填写完整')
+        } else if (r.data === -1) {
+          this.$message.error('设备类型id错误')
+        } else if (r.data === -3) {
+          this.$message.error('用户id不正确')
+        } else if (r.data === -4) {
+          this.$message.error('权限错误')
+        } else if (r.data === 0) {
+          this.$message.success('添加成功')
+          this.dialogFormVisible = false
+          this.handleReFresh()
+        }
+      })
+      // this.$refs['dataForm'].validate((valid) => {
+      //   if (valid) {
+      // this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
+      // this.temp.author = 'vue-element-admin'
+      // createArticle(this.temp).then(() => {
+      //   this.list.unshift(this.temp)
+      //   this.dialogFormVisible = false
+      //   this.$notify({
+      //     title: 'Success',
+      //     message: 'Created Successfully',
+      //     type: 'success',
+      //     duration: 2000
+      //   })
+      // })
+      //   }
+      // })
+      console.log(this.temp)
+    },
+    handleUpdate(row) {
+      this.$axios.get('api/device/can_update', { params: { dId: row.id }}).then(r => {
+        if (r.data !== 0) {
+          if (r.data === -1) {
+            this.$message.error('设备被租用，无法修改')
+          } else if (r.data === -2) {
+            this.$message.error('设备在生产中，无法修改')
+          }
+        } else {
+          this.$axios.get('api/device_type/list_all').then(r => {
+            // console.log(r.data)
+            this.device_type_all = r.data
+            this.temp = Object.assign({}, row) // copy obj
+            console.log(this.temp)
+            this.dialogUpdateFormVisible = true
+            this.$nextTick(() => {
+              this.$refs['dataForm'].clearValidate()
+            })
+          })
+        }
+      })
+    },
+    updateData() {
+      this.temp.user_id = this.user_id
+      this.$axios.post('/api/device/update', this.temp).then(r => {
+        // console.log(r)
+        if (r.data === -2) {
+          this.$message.error('表单未填写完整')
+        } else if (r.data === -1) {
+          this.$message.error('无此设备')
+        } else if (r.data === -3) {
+          this.$message.error('设备类型id错误')
+        } else if (r.data === -4) {
+          this.$message.error('设备被租用，无法修改')
+        } else if (r.data === 0) {
+          this.$message.success('更改成功')
+          this.dialogUpdateFormVisible = false
+          this.handleReFresh()
+        }
+      })
+      // this.$message.info('he')
+      // this.$refs['dataForm'].validate((valid) => {
+      //   if (valid) {
+      //     const tempData = Object.assign({}, this.temp)
+      //     tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
+      // updateArticle(tempData).then(() => {
+      //   const index = this.list.findIndex(v => v.id === this.temp.id)
+      //   this.list.splice(index, 1, this.temp)
+      //   this.dialogFormVisible = false
+      //   this.$notify({
+      //     title: 'Success',
+      //     message: 'Update Successfully',
+      //     type: 'success',
+      //     duration: 2000
+      //   })
+      // })
+      //   }
+      // })
+    },
+    handleDelete(row, index) {
+      this.$confirm('此操作将删除该设备, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$axios.get('/api/device/delete', { params: {
+          dId: row.id
+        }}).then(r => {
+          // 0 ok -1 此设备下仍有未完成的订单 -2 无此设备
+          if (r.data === -2) {
+            this.$message.error('无此设备')
+          } else if (r.data === -1) {
+            this.$message.error('设备仍在开机生产中，无法删除')
+          } else if (r.data === -3) {
+            this.$message.error('设备被租用，无法删除')
+          } else if (r.data === 0) {
+            this.$message.success('删除成功')
+            this.handleReFresh()
+          }
+        })
+      }).catch(() => {
+        // this.$message({
+        //   type: 'info',
+        //   message: '已取消删除'
+        // })
+      })
+      // this.$notify({
+      //   title: 'Success',
+      //   message: 'Delete Successfully',
+      //   type: 'success',
+      //   duration: 2000
+      // })
+      // this.list.splice(index, 1)
+    },
+    handleReFresh() {
+      this.listQuery.id = null
+      this.listQuery.name = null
+      this.listQuery.describe = null
+      // this.listQuery.page = 1
+      this.getList()
+    },
+    handleOpen(row) {
+      // alert(row.id)
+      this.$axios.post('/api/device/open', { id: row.id }).then(r => {
+        if (r.data === -2) {
+          this.$message.error('此设备已是闲置状态')
+        } else if (r.data === -1) {
+          this.$message.error('无此设备')
+        } else if (r.data === 0) {
+          this.$message.success('开机成功')
+          this.handleReFresh()
+        }
+      })
+    },
+    handleShutdown(row, index) {
+      // alert(row.id)
+      this.$axios.post('/api/device/shutdown', { id: row.id }).then(r => {
+        if (r.data === -2) {
+          this.$message.error('此设备已关机')
+        } else if (r.data === -1) {
+          this.$message.error('无此设备')
+        } else if (r.data === -3) {
+          this.$message.error('无法关机，设备仍有排产计划')
+        } else if (r.data === 0) {
+          this.$message.success('关机成功')
+          this.handleReFresh()
+        }
+      })
+    },
+    handleListRent() {
+      this.$axios.get('api/device/list_rentable').then(r => {
+        this.dialogRentFormVisible = true
+        this.listRentable = r.data
+        console.log(r.data)
+        // this.$nextTick(() => {
+        //   this.$refs['dataForm'].clearValidate()
+        // })
+      })
+    },
+    handleRent(row) {
+      this.selectedRentDeviceId = row.id
+      this.dialogConfirmRentFormVisible = true
+    },
+    rentDevice() {
+      var info = { 'device_id': this.selectedRentDeviceId,
+        'user_id': this.user_id,
+        'expire_time': this.expireTime }
+      this.$axios.post('api/device/rent_device', info).then(r => {
+        this.dialogRentFormVisible = true
+        this.listRentable = r.data
+        console.log(r.data)
+        if (r.data === 0) {
+          this.$message.success('租用成功')
+          this.dialogConfirmRentFormVisible = false
+          this.dialogRentFormVisible = false
+          this.handleReFresh()
+        } else {
+          this.$message.error('租用失败')
+        }
+      })
+    },
+    handleDisRent(row) {
+      var info = { 'device_id': row.id,
+        'user_id': this.user_id }
+      this.$axios.post('api/device/dis_rent_device', info).then(r => {
+        this.listRentable = r.data
+        console.log(r.data)
+        if (r.data === 0) {
+          this.$message.success('解租成功')
+          this.handleReFresh()
+        } else if (r.data === -7) {
+          this.$message.error('解租失败，设备仍在生产中')
+        } else {
+          this.$message.error('解租失败')
+        }
+      })
+    },
+    handleConfCap(row) {
+      this.selectedRow = row
+      this.dialogConfCapVisible = true
+      console.log(this.selectedRow)
+    },
+    formatJson(filterVal) {
+      return this.list.map(v => filterVal.map(j => {
+        if (j === 'timestamp') {
+          return parseTime(v[j])
+        } else {
+          return v[j]
+        }
+      }))
+    }
+    // getSortClass: function(key) {
+    //   const sort = this.listQuery.sort
+    //   return sort === `+${key}` ? 'ascending' : 'descending'
+    // }
+  }
+}
+</script>
+<style lang="scss" scoped>
+.pub_dialog {
+    display: flex;
+    justify-content: center;
+    align-items: Center;
+    overflow: hidden;
+    .el-dialog {
+        margin: 0 auto !important;
+        height: 90%;
+        overflow: hidden;
+        .el-dialog__body {
+            position: absolute;
+            left: 0;
+            top: 54px;
+            bottom: 0;
+            right: 0;
+            padding: 0;
+            z-index: 1;
+            overflow: hidden;
+            overflow-y: auto;
+        }
+    }
+}
+</style>
