@@ -33,6 +33,7 @@ module.exports = {
     proxy: {
       '/api': {
         target: 'http://1.117.101.146:8088/' // 代理到后端地址
+        // target: 'http://localhost:8088/' // 代理到后端地址
       }
     },
     port: port,

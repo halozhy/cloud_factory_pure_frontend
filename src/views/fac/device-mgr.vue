@@ -516,6 +516,17 @@ export default {
           if (flag.test(this.temp.name)) {
             this.$message.error('不能输入特殊字符，请重新输入！')
           } else {
+            var flag1 = 0
+            for (let index = 0; index < this.list.length; index++) {
+              const element = this.list[index]
+              if (element.name == this.temp.name) {
+                flag1 = 1
+              }
+            }
+            if (flag1 == 1) {
+              this.$message.error('设备名重复')
+              return
+            }
             this.temp.user_id = this.user_id
             this.$axios.post('/api/device/add', this.temp).then(r => {
               console.log(r)
@@ -566,6 +577,17 @@ export default {
           if (flag.test(this.temp.name)) {
             this.$message.error('不能输入特殊字符，请重新输入！')
           } else {
+            var flag1 = 0
+            for (let index = 0; index < this.list.length; index++) {
+              const element = this.list[index]
+              if (element.name == this.temp.name && element.id != this.temp.id) {
+                flag1 = 1
+              }
+            }
+            if (flag1 == 1) {
+              this.$message.error('设备名重复')
+              return
+            }
             this.temp.user_id = this.user_id
             this.$axios.post('/api/device/update', this.temp).then(r => {
               // console.log(r)
@@ -756,7 +778,7 @@ export default {
 .filter-container-1 {
   display: none;
 }
-@media screen and (max-width: 820px) {
+@media screen and (max-width: 894px) {
   .filter-container {
     display: none;
   }

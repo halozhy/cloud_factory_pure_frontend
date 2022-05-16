@@ -94,7 +94,7 @@
     <pagination class="filter-container-1" v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" style="overflow:scroll" @pagination="getList" />
     <el-dialog title="添加" :visible.sync="dialogFormVisible">
 
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="100px" style="">
         <el-form-item label="设备类型名称" prop="name">
           <el-input v-model="temp.name" />
         </el-form-item>
@@ -111,7 +111,7 @@
 
     <el-dialog title="更改" :visible.sync="dialogUpdateFormVisible">
 
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="100px" style="">
         <el-form-item label="设备类型名称" prop="name">
           <el-input v-model="temp.name" />
         </el-form-item>
@@ -316,6 +316,17 @@ export default {
       if (flag.test(this.temp.name)) {
         this.$message.error('不能输入特殊字符，请重新输入！')
       } else {
+        var flag1 = 0
+        for (let index = 0; index < this.list.length; index++) {
+          const element = this.list[index]
+          if (element.name == this.temp.name) {
+            flag1 = 1
+          }
+        }
+        if (flag1 == 1) {
+          this.$message.error('设备类型名重复')
+          return
+        }
         this.$axios.post('/api/device_type/add', this.temp).then(r => {
           // console.log(r)
           if (r.data === -2) {
@@ -361,9 +372,20 @@ export default {
     },
     updateData() {
       var flag = new RegExp("[`~!@#$^&*()=|{}':;',\\[\\].<>《》/?~！@#￥……&*（）——|{}【】‘；：”“'。，、？ ]")
-      if (flag.test(this.temp.name)){
+      if (flag.test(this.temp.name)) {
         this.$message.error('不能输入特殊字符，请重新输入！')
       } else {
+        var flag1 = 0
+        for (let index = 0; index < this.list.length; index++) {
+          const element = this.list[index]
+          if (element.name == this.temp.name && element.id != this.temp.id) {
+            flag1 = 1
+          }
+        }
+        if (flag1 == 1) {
+          this.$message.error('设备类型名重复')
+          return
+        }
         this.$axios.post('/api/device_type/update', this.temp).then(r => {
           console.log(r)
           if (r.data === -2) {

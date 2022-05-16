@@ -372,6 +372,17 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
+          var flag1 = 0
+          for (let index = 0; index < this.list.length; index++) {
+            const element = this.list[index]
+            if (element.name == this.temp.name) {
+              flag1 = 1
+            }
+          }
+          if (flag1 == 1) {
+            this.$message.error('产品名重复')
+            return
+          }
           this.$axios.post('/api/prod/add', this.temp).then(r => {
             // console.log(r)
             if (r.data === -2) {
@@ -434,6 +445,17 @@ export default {
     updateData() {
       this.$refs['dataForm2'].validate((valid) => {
         if (valid) {
+          var flag1 = 0
+          for (let index = 0; index < this.list.length; index++) {
+            const element = this.list[index]
+            if (element.name == this.temp.name && element.id != this.temp.id) {
+              flag1 = 1
+            }
+          }
+          if (flag1 == 1) {
+            this.$message.error('产品名重复')
+            return
+          }
           this.$axios.post('/api/prod/update', this.temp).then(r => {
             // console.log(r)
             if (r.data === -4) {
