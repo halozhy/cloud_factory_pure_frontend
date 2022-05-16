@@ -1,32 +1,38 @@
 <template>
   <div class="app-container">
     <div class="filter-container" style="margin-bottom: 1rem">
-      <el-input v-model="listQuery.id" placeholder="ID" style="width: 150px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.name" placeholder="产品类型名称" style="width: 150px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <!-- <el-select v-model="listQuery.importance" placeholder="Imp" clearable style="width: 90px" class="filter-item">
-        <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item" />
-      </el-select>
-      <el-select v-model="listQuery.type" placeholder="Type" clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
-      </el-select>
-      <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
-        <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
-      </el-select> -->
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+      <el-input v-model="listQuery.id" placeholder="ID" style="width: 150px" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.name" placeholder="产品类型名称" style="width: 150px;margin-left:10px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" style="margin-left:10px;" @click="handleFilter">
         查找
       </el-button>
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-refresh" @click="handleReFresh">
         重置
       </el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleCreate">
+      <el-button class="filter-item" style="float:right" type="primary" icon="el-icon-plus" @click="handleCreate">
         添加
       </el-button>
-      <!-- <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
-        Export
-      </el-button> -->
-      <!-- <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
-        reviewer
-      </el-checkbox> -->
+    </div>
+    <div class="filter-container-1" style="margin-bottom: 1rem">
+      <el-row :gutter="10">
+        <el-col :span="12">
+          <el-input v-model="listQuery.id" placeholder="ID" class="filter-item" @keyup.enter.native="handleFilter" />
+        </el-col>
+        <el-col :span="12">
+          <el-input v-model="listQuery.name" placeholder="产品类型名称" class="filter-item" @keyup.enter.native="handleFilter" />
+        </el-col>
+      </el-row>
+      <el-row style="margin-top:1rem; margin-left:0px">
+        <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+          查找
+        </el-button>
+        <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-refresh" @click="handleReFresh">
+          重置
+        </el-button>
+        <el-button class="filter-item" style="float:right" type="primary" icon="el-icon-plus" @click="handleCreate">
+          添加
+        </el-button>
+      </el-row>
     </div>
 
     <el-table
@@ -51,7 +57,7 @@
           <span>{{ row.name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" min-width="150px" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" min-width="150px" max-width="200px" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
             更改
@@ -69,12 +75,12 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" style="overflow:auto" @pagination="getList" />
 
     <el-dialog title="添加" :visible.sync="dialogFormVisible">
 
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="产品类型名称">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="100px" style="">
+        <el-form-item label="产品类型名称" prop="name">
           <el-input v-model="temp.name" />
         </el-form-item>
       </el-form>
@@ -90,8 +96,8 @@
 
     <el-dialog title="更改" :visible.sync="dialogUpdateFormVisible">
 
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="产品类型名称">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="100px" style="">
+        <el-form-item label="产品类型名称" prop="name">
           <el-input v-model="temp.name" />
         </el-form-item>
       </el-form>
@@ -155,6 +161,16 @@ export default {
     }
   },
   data() {
+    var checkName = (rule, value, callback) => {
+      console.log(value)
+      if (value === '') {
+        callback(new Error('请输入产品类型名称'))
+      } else if (value.length > 10) {
+        callback(new Error('产品类型名称过长'))
+      } else {
+        callback()
+      }
+    }
     return {
       tableKey: 0,
       list: null,
@@ -188,9 +204,7 @@ export default {
       dialogUpdateFormVisible: false,
       pvData: [],
       rules: {
-        type: [{ required: true, message: 'type is required', trigger: 'change' }],
-        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-        title: [{ required: true, message: 'title is required', trigger: 'blur' }]
+        name: [{ validator: checkName, trigger: 'change' }]
       },
       downloadLoading: false
     }
@@ -264,16 +278,32 @@ export default {
       })
     },
     createData() {
-      this.$axios.post('/api/prod_type/add', this.temp).then(r => {
-        // console.log(r)
-        if (r.data === -2) {
-          this.$message.error('表单未填写完整')
-        } else if (r.data === 0) {
-          this.$message.success('添加成功')
-          this.dialogFormVisible = false
-          this.handleReFresh()
+      this.$refs['dataForm'].validate((valid) => {
+        if (valid) {
+          this.$axios.post('/api/prod_type/add', this.temp).then(r => {
+            // console.log(r)
+            if (r.data === -2) {
+              this.$message.error('表单未填写完整')
+            } else if (r.data === 0) {
+              this.$message.success('添加成功')
+              this.dialogFormVisible = false
+              this.handleReFresh()
+            }
+          })
         }
       })
+
+      // this.$axios.post('/api/prod_type/add', this.temp).then(r => {
+      //   // console.log(r)
+      //   if (r.data === -2) {
+      //     this.$message.error('表单未填写完整')
+      //   } else if (r.data === 0) {
+      //     this.$message.success('添加成功')
+      //     this.dialogFormVisible = false
+      //     this.handleReFresh()
+      //   }
+      // })
+
       // this.$refs['dataForm'].validate((valid) => {
       //   if (valid) {
       // this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
@@ -308,18 +338,34 @@ export default {
       })
     },
     updateData() {
-      this.$axios.post('/api/prod_type/update', this.temp).then(r => {
-        console.log(r)
-        if (r.data === -2) {
-          this.$message.error('表单未填写完整')
-        } else if (r.data === -1) {
-          this.$message.error('无此产品类型')
-        } else if (r.data === 0) {
-          this.$message.success('更改成功')
-          this.dialogUpdateFormVisible = false
-          this.handleReFresh()
+      this.$refs['dataForm'].validate((valid) => {
+        if (valid) {
+          this.$axios.post('/api/prod_type/update', this.temp).then(r => {
+            console.log(r)
+            if (r.data === -2) {
+              this.$message.error('表单未填写完整')
+            } else if (r.data === -1) {
+              this.$message.error('无此产品类型')
+            } else if (r.data === 0) {
+              this.$message.success('更改成功')
+              this.dialogUpdateFormVisible = false
+              this.handleReFresh()
+            }
+          })
         }
       })
+      // this.$axios.post('/api/prod_type/update', this.temp).then(r => {
+      //   console.log(r)
+      //   if (r.data === -2) {
+      //     this.$message.error('表单未填写完整')
+      //   } else if (r.data === -1) {
+      //     this.$message.error('无此产品类型')
+      //   } else if (r.data === 0) {
+      //     this.$message.success('更改成功')
+      //     this.dialogUpdateFormVisible = false
+      //     this.handleReFresh()
+      //   }
+      // })
       // this.$message.info('he')
       // this.$refs['dataForm'].validate((valid) => {
       //   if (valid) {
@@ -415,3 +461,16 @@ export default {
   }
 }
 </script>
+<style scoped>
+  .filter-container-1 {
+    display: none;
+  }
+  @media screen and (max-width: 680px) {
+  .filter-container {
+    display: none;
+  }
+  .filter-container-1 {
+    display: block;
+  }
+}
+</style>

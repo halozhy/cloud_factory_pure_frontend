@@ -89,9 +89,15 @@ export default {
   name: 'Login',
   data() {
     const validateUsername = (rule, value, callback) => {
+      if (value === '') {
+        callback(Error('请输入用户名'))
+      }
       callback()
     }
     const validatePassword = (rule, value, callback) => {
+      if (value === '') {
+        callback(Error('请输入密码'))
+      }
       callback()
     }
 
@@ -136,28 +142,72 @@ export default {
       this.$router.push({ path: '/register' })
     },
     handleLogin() {
-      this.loading = true
-      this.$axios.post('/api/user/login', this.loginForm).then(r => {
-        this.loading = false
-        console.log(r)
-        if (r.data.data === 0) {
-          // console.log(store)
-          Cookie.set('userId', r.data.userId)
-          Cookie.set('username', r.data.username)
-          Cookie.set('type', r.data.type)
-          // this.$store.commit('setUserId', r.data.userId)
-          // this.$store.commit('setUsername', r.data.username)
-          // store.state.name = r.data.username
-          // store.state.id = r.data.userId
-          // console.log()
-          // setRouterByType(r.data.type)
-          this.$router.push({ path: this.redirect || '/' })
-        } else if (r.data.data === -2) {
-          Message.error('表单未填写完整')
-        } else if (r.data.data === -1) {
-          Message.error('用户名或密码错误')
+      // var users = [
+      //   { username: 'admin', password: 'admin', type: '超级管理员', userId: '1' },
+      //   { username: '113', password: '12', type: '云工厂管理员', userId: '12' },
+      //   { username: '11', password: '22', type: '经销商', userId: '13' }
+      // ]
+      // this.loading = true
+      // var flag = 0
+      // var flagPwd = 0
+      // for (let index = 0; index < users.length; index++) {
+      //   const element = users[index]
+      //   if (this.loginForm.username === element.username) {
+      //     flag = 1
+      //     if (this.loginForm.password === element.password) {
+      //       flagPwd = 1
+      //       Cookie.set('userId', element.userId)
+      //       Cookie.set('username', element.username)
+      //       Cookie.set('type', element.type)
+      //       break
+      //     }
+      //   }
+      // }
+      // if (flag === 1 && flagPwd === 1) {
+      //   this.$router.push({ path: this.redirect || '/' })
+      // } else if (flag === 0) {
+      //   Message.error('账号不存在')
+      // } else if (flagPwd === 0) {
+      //   Message.error('密码错误')
+      // }
+      // this.loading = false
+
+      this.$refs['loginForm'].validate((valid) => {
+        if (valid) {
+          this.$axios.post('/api/user/loginNew', this.loginForm).then(r => {
+            this.loading = false
+            console.log(r)
+            if (r.data.data === 0) {
+              Cookie.set('userId', r.data.userId)
+              Cookie.set('username', r.data.username)
+              Cookie.set('type', r.data.type)
+              this.$router.push({ path: this.redirect || '/' })
+            } else if (r.data.data === -2) {
+              Message.error('表单未填写完整')
+            } else if (r.data.data === -1) {
+              Message.error('账户不存在')
+            } else if (r.data.data === -3) {
+              Message.error('密码错误')
+            }
+          })
         }
       })
+      // this.$axios.post('/api/user/loginNew', this.loginForm).then(r => {
+      //   this.loading = false
+      //   console.log(r)
+      //   if (r.data.data === 0) {
+      //     Cookie.set('userId', r.data.userId)
+      //     Cookie.set('username', r.data.username)
+      //     Cookie.set('type', r.data.type)
+      //     this.$router.push({ path: this.redirect || '/' })
+      //   } else if (r.data.data === -2) {
+      //     Message.error('表单未填写完整')
+      //   } else if (r.data.data === -1) {
+      //     Message.error('账户不存在')
+      //   } else if (r.data.data === -3) {
+      //     Message.error('密码错误')
+      //   }
+      // })
 
       // this.$axios({
       //   // baseUrl: '',

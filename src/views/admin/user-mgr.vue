@@ -15,7 +15,7 @@
       </el-button>
     </div>
     <div class="filter-container-1" style="margin-bottom: 1rem;">
-      <el-row gutter="10">
+      <el-row :gutter="10">
         <el-col :span="8">
           <el-input v-model="listQuery.id" placeholder="ID" class="filter-item" @keyup.enter.native="handleFilter" />
         </el-col>
@@ -136,24 +136,24 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" style="overflow:scroll" @pagination="getList" />
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" style="overflow:auto" @pagination="getList" />
 
     <el-dialog title="添加" :visible.sync="dialogFormVisible">
 
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="用户名">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="80px" style="">
+        <el-form-item label="用户名" prop="username">
           <el-input v-model="temp.username" />
         </el-form-item>
-        <el-form-item label="密码">
+        <el-form-item label="密码" prop="password">
           <el-input
             v-model="temp.password"
             show-password
           />
         </el-form-item>
-        <el-form-item label="真实姓名">
+        <el-form-item label="真实姓名" prop="name">
           <el-input v-model="temp.name" />
         </el-form-item>
-        <el-form-item label="联系方式">
+        <el-form-item label="联系方式" prop="contact">
           <el-input v-model="temp.contact" />
         </el-form-item>
         <el-form-item label="类型">
@@ -163,10 +163,10 @@
           </el-radio-group>
         </el-form-item>
         <div v-if="temp.type == 1">
-          <el-form-item label="工厂名称">
+          <el-form-item label="工厂名称" prop="fac_name">
             <el-input v-model="temp.fac_name" />
           </el-form-item>
-          <el-form-item label="工厂描述">
+          <el-form-item label="工厂描述" prop="fac_describe">
             <el-input v-model="temp.fac_describe" />
           </el-form-item>
         </div>
@@ -200,50 +200,33 @@
 
     <el-dialog title="更改" :visible.sync="dialogUpdateFormVisible">
 
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left">
+      <el-form ref="dataForm1" :rules="rules" :model="temp" label-position="left" label-width="80px">
         <el-form-item label="用户名">
           <el-input v-model="temp.username" disabled />
         </el-form-item>
-        <el-form-item label="密码">
+        <el-form-item label="密码" prop="password">
           <el-input
             v-model="temp.password"
             show-password
           />
         </el-form-item>
-        <el-form-item label="真实姓名">
+        <el-form-item label="真实姓名" prop="name">
           <el-input v-model="temp.name" />
         </el-form-item>
-        <el-form-item label="联系方式">
+        <el-form-item label="联系方式" prop="contact">
           <el-input v-model="temp.contact" />
         </el-form-item>
         <el-form-item label="类型">
           <el-input v-model="temp.type" disabled />
         </el-form-item>
         <div v-if="temp.type == '云工厂管理员'">
-          <el-form-item label="工厂名称">
+          <el-form-item label="工厂名称" prop="fac_name">
             <el-input v-model="temp.fac_name" />
           </el-form-item>
-          <el-form-item label="工厂描述">
+          <el-form-item label="工厂描述" prop="fac_describe">
             <el-input v-model="temp.fac_describe" />
           </el-form-item>
         </div>
-        <!-- <el-form-item label="Date" prop="timestamp">
-          <el-date-picker v-model="temp.timestamp" type="datetime" placeholder="Please pick a date" />
-        </el-form-item>
-        <el-form-item label="Title" prop="title">
-          <el-input v-model="temp.title" />
-        </el-form-item>
-        <el-form-item label="Status">
-          <el-select v-model="temp.status" class="filter-item" placeholder="Please select">
-            <el-option v-for="item in statusOptions" :key="item" :label="item" :value="item" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="Imp">
-          <el-rate v-model="temp.importance" :colors="['#99A9BF', '#F7BA2A', '#FF9900']" :max="3" style="margin-top:8px;" />
-        </el-form-item>
-        <el-form-item label="Remark">
-          <el-input v-model="temp.remark" :autosize="{ minRows: 2, maxRows: 4}" type="textarea" placeholder="Please input" />
-        </el-form-item> -->
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogUpdateFormVisible = false">
@@ -306,6 +289,60 @@ export default {
     }
   },
   data() {
+    var checkUsername = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入用户名'))
+      } else if (value.length > 20) {
+        callback(new Error('用户名过长'))
+      } else {
+        callback()
+      }
+    }
+    var checkPassword = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入密码'))
+      } else if (value.length > 20) {
+        callback(new Error('密码过长'))
+      } else {
+        callback()
+      }
+    }
+    var checkName = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入真实姓名'))
+      } else if (value.length > 20) {
+        callback(new Error('真实姓名过长'))
+      } else {
+        callback()
+      }
+    }
+    var checkContact = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入联系方式'))
+      } else if (value.length > 20) {
+        callback(new Error('联系方式过长'))
+      } else {
+        callback()
+      }
+    }
+    var checkFacName = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入工厂名称'))
+      } else if (value.length > 20) {
+        callback(new Error('工厂名称过长'))
+      } else {
+        callback()
+      }
+    }
+    var checkFacDescribe = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入工厂描述'))
+      } else if (value.length > 20) {
+        callback(new Error('工厂描述过长'))
+      } else {
+        callback()
+      }
+    }
     return {
       tableKey: 0,
       list: null,
@@ -346,9 +383,19 @@ export default {
       dialogUpdateFormVisible: false,
       pvData: [],
       rules: {
-        type: [{ required: true, message: 'type is required', trigger: 'change' }],
-        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-        title: [{ required: true, message: 'title is required', trigger: 'blur' }]
+        // username: [{ required: true, message: '请填写用户名', trigger: 'change' }],
+        // password: [{ required: true, message: '请填写密码', trigger: 'blur' }],
+        // name: [{ required: true, message: '请填写真实姓名', trigger: 'change' }],
+        // contact: [{ required: true, message: '请填写联系方式', trigger: 'change' }],
+        // fac_name: [{ required: true, message: '请填写工厂名称', trigger: 'change' }],
+        // fac_describe: [{ required: true, message: '请填写工厂描述', trigger: 'change' }]
+
+        username: [{ validator: checkUsername, trigger: 'change' }],
+        password: [{ validator: checkPassword, trigger: 'blur' }],
+        name: [{ validator: checkName, trigger: 'change' }],
+        contact: [{ validator: checkContact, trigger: 'change' }],
+        fac_name: [{ validator: checkFacName, trigger: 'change' }],
+        fac_describe: [{ validator: checkFacDescribe, trigger: 'change' }]
       },
       downloadLoading: false
     }
@@ -359,14 +406,34 @@ export default {
   methods: {
     getList() {
       this.listLoading = true
-      // this.list = response.data.items
-      var d = {"data":[{"id":1,"username":"admin111","password":"admin","name":"admin2","contact":"admin3","type":"超级管理员","fac_id":null,"fac_name":null,"fac_describe":null},{"id":12,"username":"113","password":"12","name":"name","contact":"con","type":"云工厂管理员","fac_id":22,"fac_name":"fac_name223","fac_describe":"asff"},{"id":13,"username":"11","password":"22","name":"name","contact":"con","type":"经销商","fac_id":null,"fac_name":null,"fac_describe":null},{"id":14,"username":"114","password":"22","name":"name","contact":"con","type":"云工厂管理员","fac_id":23,"fac_name":"fac_name23","fac_describe":"desc"},{"id":20,"username":"acco","password":"pass","name":"name","contact":"contact","type":"云工厂管理员","fac_id":28,"fac_name":"fac_name","fac_describe":"desc"},{"id":21,"username":"account","password":"pass","name":"name","contact":"contact","type":"云工厂管理员","fac_id":29,"fac_name":"facname","fac_describe":"desc"},{"id":22,"username":"1141","password":"22","name":"name","contact":"con","type":"云工厂管理员","fac_id":30,"fac_name":"fac_name","fac_describe":"desc"},{"id":23,"username":"name123","password":"123","name":"1233","contact":"fdas1","type":"云工厂管理员","fac_id":34,"fac_name":"fac_name11","fac_describe":"123"},{"id":31,"username":"45","password":"435","name":"44","contact":"44","type":"云工厂管理员","fac_id":1,"fac_name":"测试工厂","fac_describe":"测试工厂描述"},{"id":32,"username":"23","password":"2345","name":"4235","contact":"2345","type":"云工厂管理员","fac_id":42,"fac_name":"2435","fac_describe":"34252"},{"id":33,"username":"sad","password":"asd","name":"asd","contact":"sad1","type":"经销商","fac_id":null,"fac_name":null,"fac_describe":null},{"id":34,"username":"dsftest","password":"sd","name":"dsag","contact":"asdf","type":"经销商","fac_id":null,"fac_name":null,"fac_describe":null},{"id":42,"username":"1131","password":"113","name":"name","contact":"con","type":"云工厂管理员","fac_id":46,"fac_name":"adsf","fac_describe":"detail"},{"id":43,"username":"admin1","password":"admin","name":"admin","contact":"admin","type":"经销商","fac_id":null,"fac_name":null,"fac_describe":null},{"id":46,"username":"张岩","password":"123","name":"张岩","contact":"123","type":"经销商","fac_id":null,"fac_name":null,"fac_describe":null}],"count":15}
-      this.list = d.data
-
-        // this.list = this.temp
-        // console.log(r.data)
-        this.total = d.count
+      this.$axios.post('/api/user/list', this.listQuery).then(r => {
+        this.list = r.data.data
+        console.log(r.data)
+        this.total = r.data.count
         this.listLoading = false
+      })
+
+      // this.$axios.get('/users.json', this.listQuery).then(r => {
+      //   var result = []
+      //   console.log(this.listQuery)
+      //   for (let index = 0; index < r.data.data.length; index++) {
+      //     const element = r.data.data[index]
+      //     if (this.listQuery.id == '' ? true : element.id.toString().includes(this.listQuery.id)) {
+      //       if (this.listQuery.username == '' ? true : element.username.toString().includes(this.listQuery.username)) {
+      //         if (this.listQuery.name == '' ? true : element.name.toString().includes(this.listQuery.name)) {
+      //           result.push(element)
+      //         }
+      //       }
+      //     }
+      //   }
+      //   console.log(result)
+      //   this.list = this.pageList(this.listQuery.page, this.listQuery.limit, result) // 前端分页
+      //   this.total = result.length
+      //   this.listLoading = false
+      // })
+      // this.list = this.temp
+
+      // console.log(r.data)
       // this.$axios.post('/api/user/list', this.listQuery).then(r => {
       //   this.list = r.data.data
 
@@ -427,6 +494,7 @@ export default {
     },
     handleCreate() {
       this.resetTemp()
+      // this.$refs['dataForm'].clearValidate()
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -434,19 +502,51 @@ export default {
       })
     },
     createData() {
-      this.$axios.post('/api/user/add', this.temp).then(r => {
-        // console.log(r)
-        if (r.data === -2) {
-          this.$message.error('表单未填写完整')
-        } else if (r.data === -1) {
-          this.$message.error('用户名重复')
-        } else if (r.data === 0) {
-          this.$message.success('添加成功')
-          this.dialogFormVisible = false
-          this.handleReFresh()
+      this.$refs['dataForm'].validate((valid) => {
+        if (valid) {
+          this.$axios.post('/api/user/add', this.temp).then(r => {
+            if (r.data === -2) {
+              this.$message.error('表单未填写完整')
+            } else if (r.data === -1) {
+              this.$message.error('用户名重复')
+            } else if (r.data === 0) {
+              this.$message.success('添加成功')
+              this.dialogFormVisible = false
+              this.handleReFresh()
+            }
+          })
+          // var flag = 0
+          // for (let index = 0; index < this.list.length; index++) {
+          //   const element = this.list[index]
+          //   if (this.temp.username === element.username) {
+          //     this.$message.error('用户名重复')
+          //     // this.dialogFormVisible = false
+          //     flag = 1
+          //   }
+          // }
+          // if (flag === 0) {
+          //   this.$message.success('添加成功')
+          //   this.dialogFormVisible = false
+          //   this.handleReFresh()
+          // }
+        } else {
+          console.log('error submit!!')
+          return false
         }
       })
-      
+      // this.$axios.post('/api/user/add', this.temp).then(r => {
+      //   // console.log(r)
+      //   if (r.data === -2) {
+      //     this.$message.error('表单未填写完整')
+      //   } else if (r.data === -1) {
+      //     this.$message.error('用户名重复')
+      //   } else if (r.data === 0) {
+      //     this.$message.success('添加成功')
+      //     this.dialogFormVisible = false
+      //     this.handleReFresh()
+      //   }
+      // })
+
       // this.$refs['dataForm'].validate((valid) => {
       //   if (valid) {
       // this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
@@ -477,22 +577,44 @@ export default {
       // this.dialogStatus = 'update'
       this.dialogUpdateFormVisible = true
       this.$nextTick(() => {
-        this.$refs['dataForm'].clearValidate()
+        this.$refs['dataForm1'].clearValidate()
       })
     },
     updateData() {
-      this.$axios.post('/api/user/update', this.temp).then(r => {
-        // console.log(r)
-        if (r.data === -2) {
-          this.$message.error('表单未填写完整')
-        } else if (r.data === -1) {
-          this.$message.error('无此用户')
-        } else if (r.data === 0) {
-          this.$message.success('更改成功')
-          this.dialogUpdateFormVisible = false
-          this.handleReFresh()
+      this.$refs['dataForm1'].validate((valid) => {
+        if (valid) {
+          this.$axios.post('/api/user/update', this.temp).then(r => {
+            // console.log(r)
+            if (r.data === -2) {
+              this.$message.error('表单未填写完整')
+            } else if (r.data === -1) {
+              this.$message.error('无此用户')
+            } else if (r.data === 0) {
+              this.$message.success('更改成功')
+              this.dialogUpdateFormVisible = false
+              this.handleReFresh()
+            }
+          })
+          // this.$message.success('更改成功')
+          // this.dialogUpdateFormVisible = false
+          // this.handleReFresh()
+        } else {
+          console.log('error submit!!')
+          return false
         }
       })
+      // this.$axios.post('/api/user/update', this.temp).then(r => {
+      //   // console.log(r)
+      //   if (r.data === -2) {
+      //     this.$message.error('表单未填写完整')
+      //   } else if (r.data === -1) {
+      //     this.$message.error('无此用户')
+      //   } else if (r.data === 0) {
+      //     this.$message.success('更改成功')
+      //     this.dialogUpdateFormVisible = false
+      //     this.handleReFresh()
+      //   }
+      // })
       // this.$message.info('he')
       // this.$refs['dataForm'].validate((valid) => {
       //   if (valid) {
@@ -546,9 +668,9 @@ export default {
       // this.list.splice(index, 1)
     },
     handleReFresh() {
-      this.listQuery.id = null
-      this.listQuery.username = null
-      this.listQuery.name = null
+      this.listQuery.id = ''
+      this.listQuery.username = ''
+      this.listQuery.name = ''
       // this.listQuery.page = 1
       this.getList()
     },

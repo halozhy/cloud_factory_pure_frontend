@@ -2,14 +2,35 @@
   <div class="app-container">
     <div class="filter-container" style="margin-bottom: 1rem">
       <el-input v-model="listQuery.id" placeholder="ID" style="width: 150px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.product_name" placeholder="产品名称" style="width: 150px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.receiver_name" placeholder="接收人名称" style="width: 150px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+      <el-input v-model="listQuery.product_name" placeholder="产品名称" style="width: 150px;margin-left:10px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.receiver_name" placeholder="接收人名称" style="width: 150px;margin-left:10px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-button v-waves class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-search" @click="handleFilter">
         查找
       </el-button>
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-refresh" @click="handleReFresh">
         重置
       </el-button>
+    </div>
+    <div class="filter-container-1" style="margin-bottom: 1rem;">
+      <el-row :gutter="10">
+        <el-col :span="8">
+          <el-input v-model="listQuery.id" placeholder="ID" class="filter-item" @keyup.enter.native="handleFilter" />
+        </el-col>
+        <el-col :span="8">
+          <el-input v-model="listQuery.product_name" placeholder="产品名称" class="filter-item" @keyup.enter.native="handleFilter" />
+        </el-col>
+        <el-col :span="8">
+          <el-input v-model="listQuery.receiver_name" placeholder="接收人名称" class="filter-item" @keyup.enter.native="handleFilter" />
+        </el-col>
+      </el-row>
+      <el-row style="margin-top:1rem; margin-left:0px">
+        <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+          查找
+        </el-button>
+        <el-button class="filter-item" type="primary" icon="el-icon-refresh" @click="handleReFresh">
+          重置
+        </el-button>
+      </el-row>
     </div>
 
     <el-table
@@ -29,44 +50,44 @@
           <span>{{ row.id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="产品数量" min-width="100px" align="center">
+      <el-table-column label="产品数量"  align="center">
         <template slot-scope="{row}">
           <span>{{ row.num }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="产品名称" min-width="100px" align="center">
+      <el-table-column label="产品名称"  align="center">
         <template slot-scope="{row}">
           <span>{{ row.product_name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="接收人名称" min-width="100px" align="center">
+      <el-table-column label="接收人名称"  align="center">
         <template slot-scope="{row}">
           <span>{{ row.receiver_name }}</span>
           <!-- <span class="link-type" @click="handleUpdate(row)">{{ row.title }}</span>
           <el-tag>{{ row.name | typeFilter }}</el-tag> -->
         </template>
       </el-table-column>
-      <el-table-column label="联系方式" min-width="100px" align="center">
+      <el-table-column label="联系方式"  align="center">
         <template slot-scope="{row}">
           <span>{{ row.receiver_tel }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="接收人地址" min-width="100px" align="center">
+      <el-table-column label="接收人地址"  align="center">
         <template slot-scope="{row}">
           <span>{{ row.receiver_addr }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="投标截止日期" min-width="100px" align="center">
+      <el-table-column label="投标截止日期"  align="center">
         <template slot-scope="{row}">
           <span>{{ row.bid_end_date }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="收货截止日期" min-width="100px" align="center">
+      <el-table-column label="收货截止日期"  align="center">
         <template slot-scope="{row}">
           <span>{{ row.deliver_date }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="状态" width="120px" align="center">
+      <el-table-column label="状态"  align="center">
         <template slot-scope="{row}">
 
           <el-tag>{{ row.state }}</el-tag>
@@ -74,10 +95,10 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="操作" align="center" min-width="280px" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center">
         <template slot-scope="{row}">
           <el-button size="mini" type="" @click="handleChooseBid(row)">
-            查看竞标
+            查看
           </el-button>
           <!-- <el-button v-if="row.state !== '已发货' && row.state !== '已完成' " type="primary" size="mini" @click="handleUpdate(row)">
             更改
@@ -92,8 +113,8 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
-
+    <pagination class="filter-container" v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination class="filter-container-1" v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" style="overflow:scroll" @pagination="getList" />
     <el-dialog title="添加" :visible.sync="dialogFormVisible" top="8vh">
 
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="100px" top="0" style="width: 400px; margin-left:50px;">
@@ -441,6 +462,9 @@ export default {
       this.listLoading = true
       this.listQuery.user_id = this.user_id
       this.$axios.post('/api/order/list_su_admin', this.listQuery).then(r => {
+        if (r.data.data.length === 0){
+          this.$message.error('无此订单信息，请重新输入');
+        }
         this.list = r.data.data
         console.log(r.data)
         this.total = r.data.count
@@ -787,5 +811,16 @@ export default {
             overflow-y: auto;
         }
     }
+}
+.filter-container-1 {
+  display: none;
+}
+@media screen and (max-width: 820px) {
+  .filter-container {
+    display: none;
+  }
+  .filter-container-1 {
+    display: block;
+  }
 }
 </style>

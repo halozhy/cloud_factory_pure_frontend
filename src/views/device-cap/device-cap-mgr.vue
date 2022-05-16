@@ -15,12 +15,12 @@
         </template>
       </el-table-column>
       <!-- <span>{{ row.product_name }}</span> -->
-      <el-table-column label="产能（件/小时）" min-width="100px" align="center">
+      <el-table-column label="产能（件/小时）" min-width="150px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.num }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" min-width="100px" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" min-width="150px" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
           <el-button size="mini" type="primary" @click="handleUpdate(row)">
             修改
@@ -34,8 +34,8 @@
 
     <el-dialog title="添加" :visible.sync="dialogFormVisible" append-to-body>
 
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="150px" style="width: 50%; margin-left:50px;">
-        <el-form-item label="产品">
+      <el-form ref="dataForm" :rules="modifyrules" :model="temp" label-position="left">
+        <el-form-item label="产品" prop="product_id">
           <el-select v-model="temp.product_id" placeholder="请选择">
             <el-option
               v-for="item in product_all"
@@ -62,8 +62,8 @@
 
     <el-dialog title="更改" :visible.sync="dialogUpdateFormVisible" append-to-body>
 
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="150px" style="width: 50%; margin-left:50px;">
-        <el-form-item label="产品">
+      <el-form ref="dataForm" :rules="modifyrules" :model="temp" label-position="left">
+        <el-form-item label="产品" prop="product_id">
           <el-select v-model="temp.product_id" placeholder="请选择">
             <el-option
               v-for="item in product_all"
@@ -73,7 +73,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="产能（件/小时）">
+        <el-form-item label="产能（件/小时）" prop="num">
           <el-input-number v-model="temp.num" :min="0" />
         </el-form-item>
       </el-form>
@@ -100,6 +100,13 @@ export default {
   directives: { waves },
   props: { deviceId: { type: Number, required: true }},
   data() {
+    var checkProduct = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请选择产品'))
+      } else {
+        callback()
+      }
+    }
     return {
       device_id: '',
       product_all: [{
@@ -156,6 +163,11 @@ export default {
         type: [{ required: true, message: 'type is required', trigger: 'change' }],
         timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
         title: [{ required: true, message: 'title is required', trigger: 'blur' }]
+      },
+      modifyrules: {
+        product_id: [
+          { validator: checkProduct, trigger: 'blur' }
+        ]
       },
       downloadLoading: false
     }
@@ -232,22 +244,26 @@ export default {
       })
     },
     createData() {
-      this.temp.user_id = this.user_id
-      this.temp.device_id = this.deviceId
-      console.log(this.temp)
-      this.$axios.post('/api/dc/add', this.temp).then(r => {
-        console.log(r)
-        if (r.data === -2) {
-          this.$message.error('表单未填写完整')
-        } else if (r.data === -5) {
-          this.$message.error('已存在此产品的产能配置，请使用修改')
-        } else if (r.data === 0) {
-          this.$message.success('添加成功')
-          this.dialogFormVisible = false
-          this.handleReFresh()
+      this.$refs['dataForm'].validate((valid) => {
+        if (valid) {
+          this.temp.user_id = this.user_id
+          this.temp.device_id = this.deviceId
+          console.log(this.temp)
+          this.$axios.post('/api/dc/add', this.temp).then(r => {
+            console.log(r)
+            if (r.data === -2) {
+              this.$message.error('表单未填写完整')
+            } else if (r.data === -5) {
+              this.$message.error('已存在此产品的产能配置，请使用修改')
+            } else if (r.data === 0) {
+              this.$message.success('添加成功')
+              this.dialogFormVisible = false
+              this.handleReFresh()
+            }
+          })
+          console.log(this.temp)
         }
       })
-      console.log(this.temp)
     },
     handleUpdate(row) {
       this.$axios.get('api/prod/list_all').then(r => {

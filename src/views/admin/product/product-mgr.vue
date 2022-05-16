@@ -2,32 +2,41 @@
   <div class="app-container">
     <div class="filter-container" style="margin-bottom: 1rem">
       <el-input v-model="listQuery.id" placeholder="ID" style="width: 150px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.name" placeholder="产品名称" style="width: 150px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.describe" placeholder="产品描述" style="width: 150px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <!-- <el-select v-model="listQuery.importance" placeholder="Imp" clearable style="width: 90px" class="filter-item">
-        <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item" />
-      </el-select>
-      <el-select v-model="listQuery.type" placeholder="Type" clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
-      </el-select>
-      <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
-        <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
-      </el-select> -->
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+      <el-input v-model="listQuery.name" placeholder="产品名称" style="width: 150px;margin-left:10px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.describe" placeholder="产品描述" style="width: 150px;margin-left:10px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-button v-waves class="filter-item" style="margin-left:10px;" type="primary" icon="el-icon-search" @click="handleFilter">
         查找
       </el-button>
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-refresh" @click="handleReFresh">
         重置
       </el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleCreate">
+      <el-button class="filter-item" style="float:right" type="primary" icon="el-icon-plus" @click="handleCreate">
         添加
       </el-button>
-      <!-- <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
-        Export
-      </el-button> -->
-      <!-- <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
-        reviewer
-      </el-checkbox> -->
+    </div>
+    <div class="filter-container-1" style="margin-bottom: 1rem;">
+      <el-row :gutter="10">
+        <el-col :span="8">
+          <el-input v-model="listQuery.id" placeholder="ID" class="filter-item" @keyup.enter.native="handleFilter" />
+        </el-col>
+        <el-col :span="8">
+          <el-input v-model="listQuery.name" placeholder="产品名称" style="" class="filter-item" @keyup.enter.native="handleFilter" />
+        </el-col>
+        <el-col :span="8">
+          <el-input v-model="listQuery.describe" placeholder="产品描述" style="" class="filter-item" @keyup.enter.native="handleFilter" />
+        </el-col>
+      </el-row>
+      <el-row style="margin-top:1rem; margin-left:0px">
+        <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+          查找
+        </el-button>
+        <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-refresh" @click="handleReFresh">
+          重置
+        </el-button>
+        <el-button class="filter-item" style="float:right" type="primary" icon="el-icon-plus" @click="handleCreate">
+          添加
+        </el-button>
+      </el-row>
     </div>
 
     <el-table
@@ -87,21 +96,21 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" style="overflow:auto" @pagination="getList" />
 
     <el-dialog title="添加" :visible.sync="dialogFormVisible">
 
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="产品名称">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="">
+        <el-form-item label="产品名称" prop="name">
           <el-input v-model="temp.name" />
         </el-form-item>
-        <el-form-item label="产品描述">
+        <el-form-item label="产品描述" prop="describe">
           <el-input v-model="temp.describe" />
         </el-form-item>
-        <el-form-item label="产品规格">
+        <el-form-item label="产品规格" prop="spec">
           <el-input v-model="temp.spec" />
         </el-form-item>
-        <el-form-item label="产品类型">
+        <el-form-item label="产品类型" prop="type_id">
           <el-select v-model="temp.type_id" placeholder="请选择">
             <el-option
               v-for="item in prod_type_all"
@@ -124,20 +133,20 @@
 
     <el-dialog title="更改" :visible.sync="dialogUpdateFormVisible">
 
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
+      <el-form ref="dataForm2" :rules="rules" :model="temp" label-position="left" label-width="70px" style="">
         <el-form-item label="产品ID">
           <el-input v-model="temp.id" disabled />
         </el-form-item>
-        <el-form-item label="产品名称">
+        <el-form-item label="产品名称" prop="name">
           <el-input v-model="temp.name" />
         </el-form-item>
-        <el-form-item label="产品描述">
+        <el-form-item label="产品描述" prop="describe">
           <el-input v-model="temp.describe" />
         </el-form-item>
-        <el-form-item label="产品规格">
+        <el-form-item label="产品规格" prop="spec">
           <el-input v-model="temp.spec" />
         </el-form-item>
-        <el-form-item label="产品类型">
+        <el-form-item label="产品类型" prop="type_id">
           <el-select v-model="temp.type_id" placeholder="请选择">
             <el-option
               v-for="item in prod_type_all"
@@ -198,6 +207,40 @@ export default {
     }
   },
   data() {
+    var checkName = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入产品名称'))
+      } else if (value.length > 10) {
+        callback(new Error('产品名称应小于10个字符'))
+      } else {
+        callback()
+      }
+    }
+    var checkDescribe = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入产品描述'))
+      } else if (value.length > 10) {
+        callback(new Error('产品描述应小于10个字符'))
+      } else {
+        callback()
+      }
+    }
+    var checkSpec = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入产品规格'))
+      } else if (value.length > 10) {
+        callback(new Error('产品规格应小于10个字符'))
+      } else {
+        callback()
+      }
+    }
+    var checkTypeId = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请选择产品类型'))
+      } else {
+        callback()
+      }
+    }
     return {
       tableKey: 0,
       list: null,
@@ -240,9 +283,10 @@ export default {
       dialogUpdateFormVisible: false,
       pvData: [],
       rules: {
-        type: [{ required: true, message: 'type is required', trigger: 'change' }],
-        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-        title: [{ required: true, message: 'title is required', trigger: 'blur' }]
+        name: [{ validator: checkName, trigger: 'blur' }],
+        describe: [{ validator: checkDescribe, trigger: 'blur' }],
+        spec: [{ validator: checkSpec, trigger: 'blur' }],
+        type_id: [{ validator: checkTypeId, trigger: 'blur' }]
       },
       downloadLoading: false
     }
@@ -324,16 +368,30 @@ export default {
       })
     },
     createData() {
-      this.$axios.post('/api/prod/add', this.temp).then(r => {
-        // console.log(r)
-        if (r.data === -2) {
-          this.$message.error('表单未填写完整')
-        } else if (r.data === 0) {
-          this.$message.success('添加成功')
-          this.dialogFormVisible = false
-          this.handleReFresh()
+      this.$refs['dataForm'].validate((valid) => {
+        if (valid) {
+          this.$axios.post('/api/prod/add', this.temp).then(r => {
+            // console.log(r)
+            if (r.data === -2) {
+              this.$message.error('表单未填写完整')
+            } else if (r.data === 0) {
+              this.$message.success('添加成功')
+              this.dialogFormVisible = false
+              this.handleReFresh()
+            }
+          })
         }
       })
+      // this.$axios.post('/api/prod/add', this.temp).then(r => {
+      //   // console.log(r)
+      //   if (r.data === -2) {
+      //     this.$message.error('表单未填写完整')
+      //   } else if (r.data === 0) {
+      //     this.$message.success('添加成功')
+      //     this.dialogFormVisible = false
+      //     this.handleReFresh()
+      //   }
+      // })
       // this.$refs['dataForm'].validate((valid) => {
       //   if (valid) {
       // this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
@@ -372,20 +430,40 @@ export default {
       })
     },
     updateData() {
-      this.$axios.post('/api/prod/update', this.temp).then(r => {
-        // console.log(r)
-        if (r.data === -4) {
-          this.$message.error('此产品处于生产中，类型无法更改')
-        } else if (r.data === -2) {
-          this.$message.error('表单未填写完整')
-        } else if (r.data === -1) {
-          this.$message.error('无此产品')
-        } else if (r.data === 0) {
-          this.$message.success('更改成功')
-          this.dialogUpdateFormVisible = false
-          this.handleReFresh()
+      this.$refs['dataForm2'].validate((valid) => {
+        if (valid) {
+          this.$axios.post('/api/prod/update', this.temp).then(r => {
+            // console.log(r)
+            if (r.data === -4) {
+              this.$message.error('此产品处于生产中，类型无法更改')
+            } else if (r.data === -2) {
+              this.$message.error('表单未填写完整')
+            } else if (r.data === -1) {
+              this.$message.error('无此产品')
+            } else if (r.data === 0) {
+              this.$message.success('更改成功')
+              this.dialogUpdateFormVisible = false
+              this.handleReFresh()
+            }
+          })
         }
       })
+
+      // this.$axios.post('/api/prod/update', this.temp).then(r => {
+      //   // console.log(r)
+      //   if (r.data === -4) {
+      //     this.$message.error('此产品处于生产中，类型无法更改')
+      //   } else if (r.data === -2) {
+      //     this.$message.error('表单未填写完整')
+      //   } else if (r.data === -1) {
+      //     this.$message.error('无此产品')
+      //   } else if (r.data === 0) {
+      //     this.$message.success('更改成功')
+      //     this.dialogUpdateFormVisible = false
+      //     this.handleReFresh()
+      //   }
+      // })
+      //
       // this.$message.info('he')
       // this.$refs['dataForm'].validate((valid) => {
       //   if (valid) {
@@ -480,3 +558,16 @@ export default {
   }
 }
 </script>
+<style scoped>
+  .filter-container-1 {
+    display: none;
+  }
+  @media screen and (max-width: 825px) {
+  .filter-container {
+    display: none;
+  }
+  .filter-container-1 {
+    display: block;
+  }
+}
+</style>

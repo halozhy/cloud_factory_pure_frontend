@@ -2,9 +2,9 @@
   <div class="app-container">
     <div class="filter-container" style="margin-bottom: 1rem">
       <el-input v-model="listQuery.id" placeholder="ID" style="width: 150px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.product_name" placeholder="产品名称" style="width: 150px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.receiver_name" placeholder="接收人名称" style="width: 150px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+      <el-input v-model="listQuery.product_name" placeholder="产品名称" style="width: 150px;margin-left: 10px" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.receiver_name" placeholder="接收人名称" style="width: 150px;margin-left: 10px" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-button v-waves class="filter-item" style="margin-left: 10px" type="primary" icon="el-icon-search" @click="handleFilter">
         查找
       </el-button>
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-refresh" @click="handleReFresh">
@@ -23,7 +23,27 @@
         reviewer
       </el-checkbox> -->
     </div>
-
+    <div class="filter-container-1" style="margin-bottom: 1rem;">
+      <el-row :gutter="10">
+        <el-col :span="8">
+          <el-input v-model="listQuery.id" placeholder="ID" class="filter-item" @keyup.enter.native="handleFilter" />
+        </el-col>
+        <el-col :span="8">
+          <el-input v-model="listQuery.product_name" placeholder="产品名称" class="filter-item" @keyup.enter.native="handleFilter" />
+        </el-col>
+        <el-col :span="8">
+          <el-input v-model="listQuery.receiver_name" placeholder="接收人描述" class="filter-item" @keyup.enter.native="handleFilter" />
+        </el-col>
+      </el-row>
+      <el-row style="margin-top:1rem; margin-left:0px">
+        <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+          查找
+        </el-button>
+        <el-button class="filter-item" type="primary" icon="el-icon-refresh" @click="handleReFresh">
+          重置
+        </el-button>
+      </el-row>
+    </div>
     <el-table
       :key="tableKey"
       v-loading="listLoading"
@@ -107,8 +127,8 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
-
+    <pagination class="filter-container" v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination class="filter-container-1" v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" style="overflow:scroll" @pagination="getList" />
     <el-dialog title="添加" :visible.sync="dialogFormVisible" top="8vh">
 
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="100px" top="0" style="width: 400px; margin-left:50px;">
@@ -484,6 +504,9 @@ export default {
       this.listLoading = true
       this.listQuery.user_id = this.user_id
       this.$axios.post('/api/order/list_fac', this.listQuery).then(r => {
+        if (r.data.data.length === 0) {
+          this.$message.error('无此订单信息，请重新输入')
+        }
         this.list = r.data.data
         console.log(r.data)
         this.total = r.data.count
@@ -829,5 +852,16 @@ export default {
             overflow-y: auto;
         }
     }
+}
+.filter-container-1 {
+   display: none;
+ }
+@media screen and (max-width: 820px) {
+  .filter-container {
+    display: none;
+  }
+  .filter-container-1 {
+    display: block;
+  }
 }
 </style>

@@ -18,6 +18,24 @@ import '@/permission' // permission control
 import axios from 'axios'
 Vue.prototype.$axios = axios // 全局注册，使用方法为:this.$axios
 
+Vue.prototype.pageList = function(page, limit, list) {
+  var pageList = []
+  var temp = []
+  var cnt = 0
+  for (let index = 0; index < list.length; index++) {
+    const element = list[index]
+    cnt = cnt + 1
+    temp.push(element)
+    if (cnt === limit) {
+      cnt = 0
+      pageList.push(temp)
+      temp = []
+    }
+  }
+  pageList.push(temp)
+  return pageList[page - 1]
+}
+
 /**
  * If you don't want to use mock-server
  * you want to use MockJs for mock api

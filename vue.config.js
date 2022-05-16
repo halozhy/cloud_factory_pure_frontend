@@ -32,7 +32,7 @@ module.exports = {
   devServer: {
     proxy: {
       '/api': {
-        target: 'http://localhost:8088/' // 代理到后端地址
+        target: 'http://1.117.101.146:8088/' // 代理到后端地址
       }
     },
     port: port,

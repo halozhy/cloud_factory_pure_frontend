@@ -2,9 +2,9 @@
   <div class="app-container">
     <div class="filter-container" style="margin-bottom: 1rem">
       <el-input v-model="listQuery.id" placeholder="ID" style="width: 150px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.product_name" placeholder="产品名称" style="width: 150px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.receiver_name" placeholder="接收人名称" style="width: 150px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+      <el-input v-model="listQuery.product_name" placeholder="产品名称" style="width: 150px;margin-left: 10px" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.receiver_name" placeholder="接收人名称" style="width: 150px;margin-left: 10px" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-button v-waves class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-search" @click="handleFilter">
         查找
       </el-button>
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-refresh" @click="handleReFresh">
@@ -22,6 +22,27 @@
       <!-- <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
         reviewer
       </el-checkbox> -->
+    </div>
+    <div class="filter-container-1" style="margin-bottom: 1rem;">
+      <el-row :gutter="10">
+        <el-col :span="8">
+          <el-input v-model="listQuery.id" placeholder="ID" class="filter-item" @keyup.enter.native="handleFilter" />
+        </el-col>
+        <el-col :span="8">
+          <el-input v-model="listQuery.product_name" placeholder="产品名称" class="filter-item" @keyup.enter.native="handleFilter" />
+        </el-col>
+        <el-col :span="8">
+          <el-input v-model="listQuery.receiver_name" placeholder="接收人名称" class="filter-item" @keyup.enter.native="handleFilter" />
+        </el-col>
+      </el-row>
+      <el-row style="margin-top:1rem; margin-left:0px">
+        <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+          查找
+        </el-button>
+        <el-button class="filter-item" type="primary" icon="el-icon-refresh" @click="handleReFresh">
+          重置
+        </el-button>
+      </el-row>
     </div>
 
     <el-table
@@ -101,8 +122,8 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
-
+    <pagination class="filter-container" v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination class="filter-container-1" v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" style="overflow:scroll" @pagination="getList" />
     <el-dialog title="添加" :visible.sync="dialogFormVisible" top="8vh">
 
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="100px" top="0" style="width: 400px; margin-left:50px;">
@@ -249,8 +270,8 @@
     </el-dialog>
 
     <el-dialog title="竞标" :visible.sync="dialogBidFormVisible">
-      <el-form ref="dataForm" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="输入竞标价格">
+      <el-form ref="dataForm" label-position="left">
+        <el-form-item label="输入竞标价格（万）">
           <el-input-number v-model="bid_price" :precision="2" :min="0" placeholder="请输入内容" />
         </el-form-item>
       </el-form>
@@ -474,6 +495,9 @@ export default {
       this.listLoading = true
       this.listQuery.user_id = this.user_id
       this.$axios.post('/api/order/list_fac_can_bid', this.listQuery).then(r => {
+        if (r.data.data.length === 0){
+          this.$message.error('无此订单信息，请重新输入');
+        }
         this.list = r.data.data
         console.log(r.data)
         this.total = r.data.count
@@ -744,17 +768,28 @@ export default {
         'bid_price': this.bid_price,
         'order_id': this.selectedOrderId
       }
-      this.$axios.post('/api/bid/bid', info).then(r => {
-        if (r.data === 0) {
-          this.$message.success('竞标成功')
-          this.handleReFresh()
-          this.dialogBidFormVisible = false
-        } else if (r.data === -2) {
-          this.$message.error('表单未填写完整')
-        } else if (r.data === -3) {
-          this.$message.error('订单状态不合法，不能竞标')
-        }
-      })
+      this.$confirm('您确定投标金额为' + this.bid_price + '万元吗?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$axios.post('/api/bid/bid', info).then(r => {
+          if (r.data === 0) {
+            this.$message.success('竞标成功')
+            this.handleReFresh()
+            this.dialogBidFormVisible = false
+          } else if (r.data === -2) {
+            this.$message.error('表单未填写完整')
+          } else if (r.data === -3) {
+            this.$message.error('订单状态不合法，不能竞标')
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消竞标'
+        });
+      });
     },
     // handleBid(row) {
     //   // alert('here')
@@ -798,5 +833,16 @@ export default {
             overflow-y: auto;
         }
     }
+}
+.filter-container-1 {
+   display: none;
+ }
+@media screen and (max-width: 820px) {
+  .filter-container {
+    display: none;
+  }
+  .filter-container-1 {
+    display: block;
+  }
 }
 </style>

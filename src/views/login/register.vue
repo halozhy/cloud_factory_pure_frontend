@@ -5,7 +5,7 @@
       <el-form
         ref="registerForm"
         :model="registerForm"
-        :rules="loginRules"
+        :rules="rules"
         class=""
         auto-complete="on"
         label-position="left"
@@ -46,6 +46,27 @@
           <span class="show-pwd" @click="showPwd">
             <svg-icon
               :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'"
+            />
+          </span>
+        </el-form-item>
+
+        <el-form-item prop="password2">
+          <span class="svg-container">
+            <svg-icon icon-class="password" />
+          </span>
+          <el-input
+            :key="passwordType2"
+            ref="password2"
+            v-model="registerForm.password2"
+            :type="passwordType2"
+            placeholder="再次输入密码"
+            name="password2"
+            tabindex="2"
+            auto-complete="on"
+          />
+          <span class="show-pwd" @click="showPwd2">
+            <svg-icon
+              :icon-class="passwordType2 === 'password' ? 'eye' : 'eye-open'"
             />
           </span>
         </el-form-item>
@@ -159,11 +180,77 @@ export default {
     const validatePassword = (rule, value, callback) => {
       callback()
     }
+    var checkUsername = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入用户名'))
+      } else if (value.length > 20) {
+        callback(new Error('用户名过长'))
+      } else {
+        callback()
+      }
+    }
+    var checkPassword = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入密码'))
+      } else if (value.length > 20) {
+        callback(new Error('密码过长'))
+      } else {
+        callback()
+      }
+    }
+    var checkPassword2 = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请再次输入密码'))
+      } else if (value.length > 20) {
+        callback(new Error('密码过长'))
+      } else if (value !== this.registerForm.password) {
+        callback(new Error('两次输入密码不一致'))
+      } else {
+        callback()
+      }
+    }
+    var checkName = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入真实姓名'))
+      } else if (value.length > 20) {
+        callback(new Error('真实姓名过长'))
+      } else {
+        callback()
+      }
+    }
+    var checkContact = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入联系方式'))
+      } else if (value.length > 20) {
+        callback(new Error('联系方式过长'))
+      } else {
+        callback()
+      }
+    }
+    var checkFacName = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入工厂名称'))
+      } else if (value.length > 20) {
+        callback(new Error('工厂名称过长'))
+      } else {
+        callback()
+      }
+    }
+    var checkFacDescribe = (rule, value, callback) => {
+      if (value === '') {
+        callback(new Error('请输入工厂描述'))
+      } else if (value.length > 20) {
+        callback(new Error('工厂描述过长'))
+      } else {
+        callback()
+      }
+    }
 
     return {
       registerForm: {
         username: '',
         password: '',
+        password2: '',
         name: '',
         contact: '',
         type: 1,
@@ -180,7 +267,17 @@ export default {
       },
       loading: false,
       passwordType: 'password',
-      redirect: undefined
+      passwordType2: 'password',
+      redirect: undefined,
+      rules: {
+        username: [{ validator: checkUsername, trigger: 'change' }],
+        password: [{ validator: checkPassword, trigger: 'blur' }],
+        password2: [{ validator: checkPassword2, trigger: 'blur' }],
+        name: [{ validator: checkName, trigger: 'change' }],
+        contact: [{ validator: checkContact, trigger: 'change' }],
+        fac_name: [{ validator: checkFacName, trigger: 'change' }],
+        fac_describe: [{ validator: checkFacDescribe, trigger: 'change' }]
+      }
     }
   },
   watch: {
@@ -202,20 +299,63 @@ export default {
         this.$refs.password.focus()
       })
     },
+    showPwd2() {
+      if (this.passwordType2 === 'password') {
+        this.passwordType2 = ''
+      } else {
+        this.passwordType2 = 'password'
+      }
+      this.$nextTick(() => {
+        this.$refs.password2.focus()
+      })
+    },
     handleBack() {
       this.$router.push({ path: '/login' })
     },
     handleRegister() {
-      this.$axios.post('/api/user/add', this.registerForm).then(r => {
-        // console.log(r)
-        if (r.data === -2) {
-          Message.error('表单未填写完整')
-        } else if (r.data === -1) {
-          Message.error('用户名重复')
-        } else if (r.data === 0) {
-          this.$router.push({ path: this.redirect || '/login' })
+      this.$refs['registerForm'].validate((valid) => {
+        if (valid) {
+          // var users = [
+          //   { username: 'admin', password: 'admin', type: '超级管理员', userId: '1' },
+          //   { username: '113', password: '12', type: '云工厂管理员', userId: '12' },
+          //   { username: '11', password: '22', type: '经销商', userId: '13' }
+          // ]
+          // var flag = 0
+          // for (let index = 0; index < users.length; index++) {
+          //   const element = users[index]
+          //   if (this.registerForm.username === element.username) {
+          //     flag = 1
+          //   }
+          // }
+          // if (flag === 1) {
+          //   Message.error('用户名重复')
+          // }
+          this.$axios.post('/api/user/add', this.registerForm).then(r => {
+            // console.log(r)
+            if (r.data === -2) {
+              Message.error('表单未填写完整')
+            } else if (r.data === -1) {
+              Message.error('用户名重复')
+            } else if (r.data === 0) {
+              this.$router.push({ path: this.redirect || '/login' })
+            }
+          })
+        } else {
+          console.log('error submit!!')
+          return false
         }
       })
+
+      // this.$axios.post('/api/user/add', this.registerForm).then(r => {
+      //   // console.log(r)
+      //   if (r.data === -2) {
+      //     Message.error('表单未填写完整')
+      //   } else if (r.data === -1) {
+      //     Message.error('用户名重复')
+      //   } else if (r.data === 0) {
+      //     this.$router.push({ path: this.redirect || '/login' })
+      //   }
+      // })
     }
   }
 }

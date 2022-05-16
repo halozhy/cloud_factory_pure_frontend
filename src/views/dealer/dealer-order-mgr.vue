@@ -2,26 +2,41 @@
   <div class="app-container">
     <div class="filter-container" style="margin-bottom: 1rem">
       <el-input v-model="listQuery.id" placeholder="ID" style="width: 150px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.product_name" placeholder="产品名称" style="width: 150px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.receiver_name" placeholder="接收人名称" style="width: 150px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+      <el-input v-model="listQuery.product_name" placeholder="产品名称" style="width: 150px; margin-left:10px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.receiver_name" placeholder="接收人名称" style="width: 150px; margin-left:10px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-button v-waves class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-search" @click="handleFilter">
         查找
       </el-button>
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-refresh" @click="handleReFresh">
         重置
       </el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleCreate">
+      <el-button class="filter-item" style="float:right" type="primary" icon="el-icon-plus" @click="handleCreate">
         添加
       </el-button>
-      <!-- <el-button class="filter-item" style="margin-left: 10px;" type="" icon="el-icon-plus" @click="handleListRent">
-        租用
-      </el-button> -->
-      <!-- <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
-        Export
-      </el-button> -->
-      <!-- <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
-        reviewer
-      </el-checkbox> -->
+    </div>
+    <div class="filter-container-1" style="margin-bottom: 1rem">
+      <el-row :gutter="10">
+        <el-col :span="8">
+          <el-input v-model="listQuery.id" placeholder="ID" style="" class="filter-item" @keyup.enter.native="handleFilter" />
+        </el-col>
+        <el-col :span="8">
+          <el-input v-model="listQuery.product_name" placeholder="产品名称" style="" class="filter-item" @keyup.enter.native="handleFilter" />
+        </el-col>
+        <el-col :span="8">
+          <el-input v-model="listQuery.receiver_name" placeholder="接收人名称" style="" class="filter-item" @keyup.enter.native="handleFilter" />
+        </el-col>
+      </el-row>
+      <el-row style="margin-top:1rem; margin-left:0px">
+        <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+          查找
+        </el-button>
+        <el-button class="filter-item" style="" type="primary" icon="el-icon-refresh" @click="handleReFresh">
+          重置
+        </el-button>
+        <el-button class="filter-item" style="float:right" type="primary" icon="el-icon-plus" @click="handleCreate">
+          添加
+        </el-button>
+      </el-row>
     </div>
 
     <el-table
@@ -88,11 +103,20 @@
 
       <el-table-column label="操作" align="center" min-width="280px" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
-          <el-button size="mini" type="" @click="handleChooseBid(row)">
+          <el-button v-if="row.state !== '已保存'" size="mini" type="primary" @click="handleChooseBid(row)">
             选标
           </el-button>
-          <el-button v-if="row.state !== '已发货' && row.state !== '已完成' " type="primary" size="mini" @click="handleUpdate(row)">
+          <el-button v-if="row.state === '已保存'" size="mini" type="primary" @click="handleRelease(row)">
+            发布
+          </el-button>
+          <el-button v-if="row.state === '已保存' " type="primary" size="mini" @click="handleUpdateSave(row)">
             更改
+          </el-button>
+          <el-button v-if="row.state !== '已发货' && row.state !== '已完成' && row.state !== '已保存' " type="" size="mini" @click="handleUpdate(row)">
+            更改
+          </el-button>
+          <el-button v-if="row.state === '已完成'" size="mini" type="" @click="handleReturn(row)">
+            退货
           </el-button>
           <el-button size="mini" type="danger" @click="handleDelete(row,$index)">
             删除
@@ -104,12 +128,12 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" style="overflow:auto" @pagination="getList" />
 
     <el-dialog title="添加" :visible.sync="dialogFormVisible" top="8vh">
 
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="100px" top="0" style="width: 400px; margin-left:50px;">
-        <el-form-item label="产品">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="100px" top="0" style="">
+        <el-form-item label="产品" prop="product_id">
           <el-select v-model="temp.product_id" placeholder="请选择">
             <el-option
               v-for="item in product_all"
@@ -119,19 +143,19 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="产品数量">
+        <el-form-item label="产品数量" prop="num">
           <el-input-number v-model="temp.num" :min="1" label="描述文字" />
         </el-form-item>
-        <el-form-item label="收货人">
+        <el-form-item label="收货人" prop="receiver_name">
           <el-input v-model="temp.receiver_name" />
         </el-form-item>
-        <el-form-item label="联系方式">
+        <el-form-item label="联系方式" prop="receiver_tel">
           <el-input v-model="temp.receiver_tel" />
         </el-form-item>
-        <el-form-item label="收货地址">
+        <el-form-item label="收货地址" prop="receiver_addr">
           <el-input v-model="temp.receiver_addr" />
         </el-form-item>
-        <el-form-item label="投标截止日期">
+        <el-form-item label="投标截止日期" prop="bid_end_date">
           <el-date-picker
             v-model="temp.bid_end_date"
             type="date"
@@ -139,7 +163,7 @@
             :picker-options="bid_end_date_picker_options"
           />
         </el-form-item>
-        <el-form-item label="收货截止日期">
+        <el-form-item label="收货截止日期" prop="deliver_date">
           <el-date-picker
             v-model="temp.deliver_date"
             type="date"
@@ -159,8 +183,8 @@
     </el-dialog>
 
     <el-dialog title="更改" :visible.sync="dialogUpdateFormVisible">
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="100px" top="0" style="width: 400px; margin-left:50px;">
-        <el-form-item label="产品">
+      <el-form ref="dataForm2" :rules="rules" :model="temp" label-position="left" label-width="100px" top="0" style="">
+        <el-form-item label="产品" prop="product_id">
           <el-select v-model="temp.product_id" disabled placeholder="请选择">
             <el-option
               v-for="item in product_all"
@@ -170,19 +194,19 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="产品数量">
+        <el-form-item label="产品数量" prop="num">
           <el-input-number v-model="temp.num" disabled :min="1" label="描述文字" />
         </el-form-item>
-        <el-form-item label="收货人">
+        <el-form-item label="收货人" prop="receiver_name">
           <el-input v-model="temp.receiver_name" />
         </el-form-item>
-        <el-form-item label="联系方式">
+        <el-form-item label="联系方式" prop="receiver_tel">
           <el-input v-model="temp.receiver_tel" />
         </el-form-item>
-        <el-form-item label="收货地址">
+        <el-form-item label="收货地址" prop="receiver_addr">
           <el-input v-model="temp.receiver_addr" />
         </el-form-item>
-        <el-form-item label="投标截止日期">
+        <el-form-item label="投标截止日期" prop="bid_end_date">
           <el-date-picker
             v-model="temp.bid_end_date"
             disabled
@@ -191,7 +215,7 @@
             :picker-options="bid_end_date_picker_options"
           />
         </el-form-item>
-        <el-form-item label="收货截止日期">
+        <el-form-item label="收货截止日期" prop="deliver_date">
           <el-date-picker
             v-model="temp.deliver_date"
             disabled
@@ -206,6 +230,57 @@
           取消
         </el-button>
         <el-button type="primary" @click="updateData()">
+          确认
+        </el-button>
+      </div>
+    </el-dialog>
+
+    <el-dialog title="更改" :visible.sync="dialogUpdateSavedFormVisible">
+      <el-form ref="dataForm3" :rules="rules" :model="temp" label-position="left" label-width="100px" top="0" style="">
+        <el-form-item label="产品" prop="product_id">
+          <el-select v-model="temp.product_id" placeholder="请选择">
+            <el-option
+              v-for="item in product_all"
+              :key="item.id"
+              :label="item.name"
+              :value="item.id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="产品数量" prop="num">
+          <el-input-number v-model="temp.num" :min="1" label="描述文字" />
+        </el-form-item>
+        <el-form-item label="收货人" prop="receiver_name">
+          <el-input v-model="temp.receiver_name" />
+        </el-form-item>
+        <el-form-item label="联系方式" prop="receiver_tel">
+          <el-input v-model="temp.receiver_tel" />
+        </el-form-item>
+        <el-form-item label="收货地址" prop="receiver_addr">
+          <el-input v-model="temp.receiver_addr" />
+        </el-form-item>
+        <el-form-item label="投标截止日期" prop="bid_end_date">
+          <el-date-picker
+            v-model="temp.bid_end_date"
+            type="date"
+            placeholder="选择投标截止日期"
+            :picker-options="bid_end_date_picker_options"
+          />
+        </el-form-item>
+        <el-form-item label="收货截止日期" prop="deliver_date">
+          <el-date-picker
+            v-model="temp.deliver_date"
+            type="date"
+            placeholder="选择收货截止日期"
+            :picker-options="deliver_date_picker_options"
+          />
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogUpdateSavedFormVisible = false">
+          取消
+        </el-button>
+        <el-button type="primary" @click="updateSavedData()">
           确认
         </el-button>
       </div>
@@ -347,6 +422,49 @@ export default {
     }
   },
   data() {
+    var checkProductId = (rule, value, callback) => {
+      console.log(value)
+      if (value == '') {
+        callback(new Error('请选择产品'))
+      }
+      callback()
+    }
+    var checkNum = (rule, value, callback) => {
+      if (value == '' || value === 0) {
+        callback(new Error('请填写产品数量'))
+      }
+      callback()
+    }
+    var checkReceiverName = (rule, value, callback) => {
+      if (value == '') {
+        callback(new Error('请填写收货人'))
+      }
+      callback()
+    }
+    var checkReceiverTel = (rule, value, callback) => {
+      if (value == '') {
+        callback(new Error('请填写联系方式'))
+      }
+      callback()
+    }
+    var checkReceiverAddr = (rule, value, callback) => {
+      if (value == '') {
+        callback(new Error('请填写收货地址'))
+      }
+      callback()
+    }
+    var checkBidEndDate = (rule, value, callback) => {
+      if (value == '') {
+        callback(new Error('请填写投标截止日期'))
+      }
+      callback()
+    }
+    var checkDeliverDate = (rule, value, callback) => {
+      if (value == '') {
+        callback(new Error('请填写投标截止日期'))
+      }
+      callback()
+    }
     return {
       product_all: [{
         id: '0',
@@ -398,6 +516,7 @@ export default {
       },
       dialogRentFormVisible: false,
       dialogUpdateFormVisible: false,
+      dialogUpdateSavedFormVisible: false,
       dialogConfirmRentFormVisible: false,
       dialogChooseBidFormVisible: false,
       rentConfirm: { expireTime: '' },
@@ -409,9 +528,13 @@ export default {
       selectedOrderId: '',
       pvData: [],
       rules: {
-        type: [{ required: true, message: 'type is required', trigger: 'change' }],
-        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-        title: [{ required: true, message: 'title is required', trigger: 'blur' }]
+        product_id: [{ validator: checkProductId, trigger: 'blur' }],
+        num: [{ validator: checkNum, trigger: 'blur' }],
+        receiver_name: [{ validator: checkReceiverName, trigger: 'blur' }],
+        receiver_tel: [{ validator: checkReceiverTel, trigger: 'blur' }],
+        receiver_addr: [{ validator: checkReceiverAddr, trigger: 'blur' }],
+        bid_end_date: [{ validator: checkBidEndDate, trigger: 'blur' }],
+        deliver_date: [{ validator: checkDeliverDate, trigger: 'blur' }]
       },
       downloadLoading: false
     }
@@ -493,34 +616,62 @@ export default {
         this.resetTemp()
         this.dialogStatus = 'create'
         this.dialogFormVisible = true
+        // this.$refs['dataForm'].clearValidate()
         this.$nextTick(() => {
           this.$refs['dataForm'].clearValidate()
         })
       })
     },
     createData() {
-      console.log(this.temp)
-      this.temp.user_id = this.user_id
-      this.$axios.post('/api/order/add', this.temp).then(r => {
-        console.log(r)
-        if (r.data === -2) {
-          this.$message.error('表单未填写完整')
-        } else if (r.data === -1) {
-          this.$message.error('产品id错误')
-        } else if (r.data === -3) {
-          this.$message.error('用户id不正确')
-        } else if (r.data === -4) {
-          this.$message.error('权限错误')
-        } else if (r.data === -5) {
-          this.$message.error('投标或收货截止日期必须晚于当前日期')
-        } else if (r.data === -6) {
-          this.$message.error('收货截止日期必须晚于投标截止日期')
-        } else if (r.data === 0) {
-          this.$message.success('添加成功')
-          this.dialogFormVisible = false
-          this.handleReFresh()
+      this.$refs['dataForm'].validate((valid) => {
+        if (valid) {
+          console.log(this.temp)
+          this.temp.user_id = this.user_id
+          this.$axios.post('/api/order/add', this.temp).then(r => {
+            console.log(r)
+            if (r.data === -2) {
+              this.$message.error('表单未填写完整')
+            } else if (r.data === -1) {
+              this.$message.error('产品id错误')
+            } else if (r.data === -3) {
+              this.$message.error('用户id不正确')
+            } else if (r.data === -4) {
+              this.$message.error('权限错误')
+            } else if (r.data === -5) {
+              this.$message.error('投标或收货截止日期必须晚于当前日期')
+            } else if (r.data === -6) {
+              this.$message.error('收货截止日期必须晚于投标截止日期')
+            } else if (r.data === 0) {
+              this.$message.success('添加成功')
+              this.dialogFormVisible = false
+              this.handleReFresh()
+            }
+          })
         }
       })
+      // console.log(this.temp)
+      // this.temp.user_id = this.user_id
+      // this.$axios.post('/api/order/add', this.temp).then(r => {
+      //   console.log(r)
+      //   if (r.data === -2) {
+      //     this.$message.error('表单未填写完整')
+      //   } else if (r.data === -1) {
+      //     this.$message.error('产品id错误')
+      //   } else if (r.data === -3) {
+      //     this.$message.error('用户id不正确')
+      //   } else if (r.data === -4) {
+      //     this.$message.error('权限错误')
+      //   } else if (r.data === -5) {
+      //     this.$message.error('投标或收货截止日期必须晚于当前日期')
+      //   } else if (r.data === -6) {
+      //     this.$message.error('收货截止日期必须晚于投标截止日期')
+      //   } else if (r.data === 0) {
+      //     this.$message.success('添加成功')
+      //     this.dialogFormVisible = false
+      //     this.handleReFresh()
+      //   }
+      // })
+
       // this.$refs['dataForm'].validate((valid) => {
       //   if (valid) {
       // this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
@@ -537,7 +688,7 @@ export default {
       // })
       //   }
       // })
-      console.log(this.temp)
+      // console.log(this.temp)
     },
     handleUpdate(row) {
       this.$axios.get('api/order/can_update', { params: { oId: row.id }}).then(r => {
@@ -553,30 +704,51 @@ export default {
           console.log(this.temp)
           this.dialogUpdateFormVisible = true
           this.$nextTick(() => {
-            this.$refs['dataForm'].clearValidate()
+            this.$refs['dataForm2'].clearValidate()
           })
           // })
         }
       })
     },
     updateData() {
-      this.temp.user_id = this.user_id
-      this.$axios.post('/api/order/update', this.temp).then(r => {
-        // console.log(r)
-        if (r.data === -2) {
-          this.$message.error('表单未填写完整')
-        } else if (r.data === -1) {
-          this.$message.error('无此订单')
-        } else if (r.data === -3) {
-          this.$message.error('此状态不可修改')
-        } else if (r.data === -6) {
-          this.$message.error('权限错误')
-        } else if (r.data === 0) {
-          this.$message.success('更改成功')
-          this.dialogUpdateFormVisible = false
-          this.handleReFresh()
+      this.$refs['dataForm2'].validate((valid) => {
+        if (valid) {
+          this.temp.user_id = this.user_id
+          this.$axios.post('/api/order/update', this.temp).then(r => {
+            // console.log(r)
+            if (r.data === -2) {
+              this.$message.error('表单未填写完整')
+            } else if (r.data === -1) {
+              this.$message.error('无此订单')
+            } else if (r.data === -3) {
+              this.$message.error('此状态不可修改')
+            } else if (r.data === -6) {
+              this.$message.error('权限错误')
+            } else if (r.data === 0) {
+              this.$message.success('更改成功')
+              this.dialogUpdateFormVisible = false
+              this.handleReFresh()
+            }
+          })
         }
       })
+      // this.temp.user_id = this.user_id
+      // this.$axios.post('/api/order/update', this.temp).then(r => {
+      //   // console.log(r)
+      //   if (r.data === -2) {
+      //     this.$message.error('表单未填写完整')
+      //   } else if (r.data === -1) {
+      //     this.$message.error('无此订单')
+      //   } else if (r.data === -3) {
+      //     this.$message.error('此状态不可修改')
+      //   } else if (r.data === -6) {
+      //     this.$message.error('权限错误')
+      //   } else if (r.data === 0) {
+      //     this.$message.success('更改成功')
+      //     this.dialogUpdateFormVisible = false
+      //     this.handleReFresh()
+      //   }
+      // })
       // this.$message.info('he')
       // this.$refs['dataForm'].validate((valid) => {
       //   if (valid) {
@@ -596,6 +768,47 @@ export default {
       //   }
       // })
     },
+    handleUpdateSave(row) {
+      this.$axios.get('api/prod/list_all').then(r => {
+        // console.log(r.data)
+        this.product_all = r.data
+        this.resetTemp()
+        this.temp = Object.assign({}, row) // copy obj
+        console.log(this.temp)
+        this.dialogUpdateSavedFormVisible = true
+        this.$nextTick(() => {
+          this.$refs['dataForm3'].clearValidate()
+        })
+      })
+    },
+    updateSavedData() {
+      this.$refs['dataForm3'].validate((valid) => {
+        if (valid) {
+          this.temp.user_id = this.user_id
+          this.$axios.post('/api/order/updateSaved', this.temp).then(r => {
+            // console.log(r)
+            if (r.data === -2) {
+              this.$message.error('表单未填写完整')
+            } else if (r.data === -1) {
+              this.$message.error('无此订单')
+            } else if (r.data === -3) {
+              this.$message.error('此状态不可修改')
+            } else if (r.data === -6) {
+              this.$message.error('权限错误')
+            } else if (r.data === -7) {
+              this.$message.error('投标或收货截止日期必须晚于当前日期')
+            } else if (r.data === -8) {
+              this.$message.error('收货截止日期必须晚于投标截止日期')
+            } else if (r.data === 0) {
+              this.$message.success('更改成功')
+              console.log(this.dialogUpdateSavedFormVisible)
+              this.dialogUpdateSavedFormVisible = false
+              this.handleReFresh()
+            }
+          })
+        }
+      })
+    },
     handleDelete(row, index) {
       this.$confirm('此操作将删除该订单, 是否继续?', '提示', {
         confirmButtonText: '确定',
@@ -610,7 +823,7 @@ export default {
           if (r.data === -2) {
             this.$message.error('无此订单')
           } else if (r.data === -1) {
-            this.$message.error('只可删除未中标的订单')
+            this.$message.error('只可删除未中标或已保存的订单')
           } else if (r.data === 0) {
             this.$message.success('删除成功')
             this.handleReFresh()
@@ -648,6 +861,26 @@ export default {
           this.$message.success('开机成功')
           this.handleReFresh()
         }
+      })
+    },
+    handleRelease(row) {
+      this.$confirm('是否确认发布?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$axios.get('/api/order/release', { params: {
+          orderId: row.id
+        }}).then(r => {
+          // 0 ok
+          if (r.data === 0) {
+            this.$message.success('发布成功')
+            this.handleReFresh()
+          } else if (r.data === -1) {
+            this.$message.error('发布失败')
+            this.handleReFresh()
+          }
+        })
       })
     },
     handleShutdown(row, index) {
@@ -761,6 +994,26 @@ export default {
         })
       })
     },
+    handleReturn(row) {
+      this.$confirm('是否确认退货?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$axios.get('/api/order/return', { params: {
+          orderId: row.id
+        }}).then(r => {
+          // 0 ok
+          if (r.data === 0) {
+            this.$message.success('成功')
+            this.handleReFresh()
+          } else if (r.data === -1) {
+            this.$message.error('无法收货，状态不是已发货')
+            this.handleReFresh()
+          }
+        })
+      })
+    },
     formatJson(filterVal) {
       return this.list.map(v => filterVal.map(j => {
         if (j === 'timestamp') {
@@ -778,6 +1031,17 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+  .filter-container-1 {
+    display: none;
+  }
+  @media screen and (max-width: 840px) {
+  .filter-container {
+    display: none;
+  }
+  .filter-container-1 {
+    display: block;
+  }
+}
 .pub_dialog {
     display: flex;
     justify-content: center;

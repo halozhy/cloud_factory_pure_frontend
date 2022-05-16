@@ -10,10 +10,10 @@
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-refresh" @click="handleReFresh">
         重置
       </el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-plus" @click="handleCreate">
+      <el-button class="filter-item" style="float:right" type="primary" icon="el-icon-plus" @click="handleCreate">
         添加
       </el-button>
-      <el-button class="filter-item" style="margin-left: 10px;" type="" icon="el-icon-plus" @click="handleListRent">
+      <el-button class="filter-item" style="float:right" type="" icon="el-icon-plus" @click="handleListRent">
         租用
       </el-button>
       <!-- <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
@@ -22,6 +22,34 @@
       <!-- <el-checkbox v-model="showReviewer" class="filter-item" style="margin-left:15px;" @change="tableKey=tableKey+1">
         reviewer
       </el-checkbox> -->
+    </div>
+
+    <div class="filter-container-1" style="margin-bottom: 1rem;">
+      <el-row :gutter="10">
+        <el-col :span="8">
+          <el-input v-model="listQuery.id" placeholder="ID" class="filter-item" @keyup.enter.native="handleFilter" />
+        </el-col>
+        <el-col :span="8">
+          <el-input v-model="listQuery.username" placeholder="设备名称" class="filter-item" @keyup.enter.native="handleFilter" />
+        </el-col>
+        <el-col :span="8">
+          <el-input v-model="listQuery.name" placeholder="设备描述" class="filter-item" @keyup.enter.native="handleFilter" />
+        </el-col>
+      </el-row>
+      <el-row style="margin-top:1rem; margin-left:0px">
+        <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+          查找
+        </el-button>
+        <el-button class="filter-item" type="primary" icon="el-icon-refresh" @click="handleReFresh">
+          重置
+        </el-button>
+        <el-button class="filter-item" type="primary" style="float:right;" icon="el-icon-plus" @click="handleCreate">
+          添加
+        </el-button>
+        <el-button class="filter-item" style="float:right;" type="" icon="el-icon-plus" @click="handleListRent">
+          租用
+        </el-button>
+      </el-row>
     </div>
 
     <el-table
@@ -85,7 +113,7 @@
         </template>
       </el-table-column>
 
-      <el-table-column label="操作" align="center" min-width="250px" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" min-width="300px" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
           <el-button v-if="row.state === '关机'" size="mini" type="" @click="handleOpen(row)">
             开机
@@ -118,21 +146,22 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination class="filter-container" v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList"/>
+    <pagination class="filter-container-1" v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" style="overflow:scroll" @pagination="getList"/>
 
     <el-dialog title="添加" :visible.sync="dialogFormVisible">
 
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="设备名称">
+      <el-form ref="dataForm" :rules="addrules" :model="temp" label-position="left">
+        <el-form-item label="设备名称" prop="name">
           <el-input v-model="temp.name" />
         </el-form-item>
-        <el-form-item label="设备描述">
+        <el-form-item label="设备描述" prop="describe">
           <el-input v-model="temp.describe" />
         </el-form-item>
-        <el-form-item label="设备规格">
+        <el-form-item label="设备规格" prop="spec">
           <el-input v-model="temp.spec" />
         </el-form-item>
-        <el-form-item label="设备类型">
+        <el-form-item label="设备类型" prop="type_id">
           <el-select v-model="temp.type_id" placeholder="请选择">
             <el-option
               v-for="item in device_type_all"
@@ -162,17 +191,17 @@
 
     <el-dialog title="更改" :visible.sync="dialogUpdateFormVisible">
 
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="70px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="设备名称">
+      <el-form ref="dataForm" :rules="addrules" :model="temp" label-position="left">
+        <el-form-item label="设备名称" prop="name">
           <el-input v-model="temp.name" />
         </el-form-item>
-        <el-form-item label="设备描述">
+        <el-form-item label="设备描述" prop="describe">
           <el-input v-model="temp.describe" />
         </el-form-item>
-        <el-form-item label="设备规格">
+        <el-form-item label="设备规格" prop="spec">
           <el-input v-model="temp.spec" />
         </el-form-item>
-        <el-form-item label="设备类型">
+        <el-form-item label="设备类型" prop="type_id">
           <el-select v-model="temp.type_id" placeholder="请选择">
             <el-option
               v-for="item in device_type_all"
@@ -232,8 +261,8 @@
       </el-table>
 
       <el-dialog title="确认租用" :visible.sync="dialogConfirmRentFormVisible" append-to-body>
-        <el-form ref="dataForm" :model="rentConfirm" label-position="left" label-width="100px" style="width: 400px; margin-left:50px;">
-          <el-form-item label="选择到期时间">
+        <el-form ref="dataForm" :rules="rentrules" :model="rentConfirm" label-position="left">
+          <el-form-item label="选择到期时间" prop="expireTime">
             <el-date-picker
               v-model="expireTime"
               type="datetime"
@@ -301,6 +330,27 @@ export default {
     }
   },
   data() {
+    var checkRentTime = (rule, value, callback) => {
+      if (!this.expireTime) {
+        callback(new Error('请选择到期时间'))
+      } else {
+        callback()
+      }
+    }
+    var checkName = (rule, value, callback) => {
+      if (!value) {
+        return callback(new Error('输入不能为空'))
+      }
+      var flag = new RegExp("[`~!@#$^&*()=|{}':;',\\[\\].<>《》/?~！@#￥……&*（）——|{}【】‘；：”“'。，、？ ]")
+      if (flag.test(value)) {
+        callback(new Error('不能输入特殊字符'))
+        console.log(value)
+      } else if (value.length > 10) {
+        callback(new Error('输入不能超过10个字符'))
+      } else {
+        callback()
+      }
+    }
     return {
       device_type_all: [{
         id: '0',
@@ -359,7 +409,26 @@ export default {
         timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
         title: [{ required: true, message: 'title is required', trigger: 'blur' }]
       },
-      downloadLoading: false
+      downloadLoading: false,
+      addrules: {
+        name: [
+          { validator: checkName, trigger: 'blur' }
+        ],
+        describe: [
+          { required: true, message: '请输入设备描述', trigger: 'blur' }
+        ],
+        spec: [
+          { required: true, message: '请输入设备规格', trigger: 'blur' }
+        ],
+        type_id: [
+          { required: true, message: '请选择设备类型', trigger: 'blur' }
+        ]
+      },
+      rentrules: {
+        expireTime: [
+          { validator: checkRentTime, trigger: 'blur' }
+        ]
+      }
     }
   },
   created() {
@@ -387,6 +456,9 @@ export default {
       // this.list = response.data.items
       this.listQuery.user_id = this.user_id
       this.$axios.post('/api/device/list_fac', this.listQuery).then(r => {
+        if (r.data.data.length === 0) {
+          this.$message.error('未查询到设备信息')
+        }
         this.list = r.data.data
         // this.list = this.temp
         console.log(r.data)
@@ -438,40 +510,32 @@ export default {
       })
     },
     createData() {
-      this.temp.user_id = this.user_id
-      this.$axios.post('/api/device/add', this.temp).then(r => {
-        console.log(r)
-        if (r.data === -2) {
-          this.$message.error('表单未填写完整')
-        } else if (r.data === -1) {
-          this.$message.error('设备类型id错误')
-        } else if (r.data === -3) {
-          this.$message.error('用户id不正确')
-        } else if (r.data === -4) {
-          this.$message.error('权限错误')
-        } else if (r.data === 0) {
-          this.$message.success('添加成功')
-          this.dialogFormVisible = false
-          this.handleReFresh()
+      this.$refs['dataForm'].validate((valid) => {
+        if (valid) {
+          var flag = new RegExp("[`~!@#$^&*()=|{}':;',\\[\\].<>《》/?~！@#￥……&*（）——|{}【】‘；：”“'。，、？ ]")
+          if (flag.test(this.temp.name)) {
+            this.$message.error('不能输入特殊字符，请重新输入！')
+          } else {
+            this.temp.user_id = this.user_id
+            this.$axios.post('/api/device/add', this.temp).then(r => {
+              console.log(r)
+              if (r.data === -2) {
+                this.$message.error('表单未填写完整')
+              } else if (r.data === -1) {
+                this.$message.error('设备类型id错误')
+              } else if (r.data === -3) {
+                this.$message.error('用户id不正确')
+              } else if (r.data === -4) {
+                this.$message.error('权限错误')
+              } else if (r.data === 0) {
+                this.$message.success('添加成功')
+                this.dialogFormVisible = false
+                this.handleReFresh()
+              }
+            })
+          }
         }
       })
-      // this.$refs['dataForm'].validate((valid) => {
-      //   if (valid) {
-      // this.temp.id = parseInt(Math.random() * 100) + 1024 // mock a id
-      // this.temp.author = 'vue-element-admin'
-      // createArticle(this.temp).then(() => {
-      //   this.list.unshift(this.temp)
-      //   this.dialogFormVisible = false
-      //   this.$notify({
-      //     title: 'Success',
-      //     message: 'Created Successfully',
-      //     type: 'success',
-      //     duration: 2000
-      //   })
-      // })
-      //   }
-      // })
-      console.log(this.temp)
     },
     handleUpdate(row) {
       this.$axios.get('api/device/can_update', { params: { dId: row.id }}).then(r => {
@@ -496,41 +560,32 @@ export default {
       })
     },
     updateData() {
-      this.temp.user_id = this.user_id
-      this.$axios.post('/api/device/update', this.temp).then(r => {
-        // console.log(r)
-        if (r.data === -2) {
-          this.$message.error('表单未填写完整')
-        } else if (r.data === -1) {
-          this.$message.error('无此设备')
-        } else if (r.data === -3) {
-          this.$message.error('设备类型id错误')
-        } else if (r.data === -4) {
-          this.$message.error('设备被租用，无法修改')
-        } else if (r.data === 0) {
-          this.$message.success('更改成功')
-          this.dialogUpdateFormVisible = false
-          this.handleReFresh()
+      this.$refs['dataForm'].validate((valid) => {
+        if (valid) {
+          var flag = new RegExp("[`~!@#$^&*()=|{}':;',\\[\\].<>《》/?~！@#￥……&*（）——|{}【】‘；：”“'。，、？ ]")
+          if (flag.test(this.temp.name)) {
+            this.$message.error('不能输入特殊字符，请重新输入！')
+          } else {
+            this.temp.user_id = this.user_id
+            this.$axios.post('/api/device/update', this.temp).then(r => {
+              // console.log(r)
+              if (r.data === -2) {
+                this.$message.error('表单未填写完整')
+              } else if (r.data === -1) {
+                this.$message.error('无此设备')
+              } else if (r.data === -3) {
+                this.$message.error('设备类型id错误')
+              } else if (r.data === -4) {
+                this.$message.error('设备被租用，无法修改')
+              } else if (r.data === 0) {
+                this.$message.success('更改成功')
+                this.dialogUpdateFormVisible = false
+                this.handleReFresh()
+              }
+            })
+          }
         }
       })
-      // this.$message.info('he')
-      // this.$refs['dataForm'].validate((valid) => {
-      //   if (valid) {
-      //     const tempData = Object.assign({}, this.temp)
-      //     tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-      // updateArticle(tempData).then(() => {
-      //   const index = this.list.findIndex(v => v.id === this.temp.id)
-      //   this.list.splice(index, 1, this.temp)
-      //   this.dialogFormVisible = false
-      //   this.$notify({
-      //     title: 'Success',
-      //     message: 'Update Successfully',
-      //     type: 'success',
-      //     duration: 2000
-      //   })
-      // })
-      //   }
-      // })
     },
     handleDelete(row, index) {
       this.$confirm('此操作将删除该设备, 是否继续?', '提示', {
@@ -617,20 +672,24 @@ export default {
       this.dialogConfirmRentFormVisible = true
     },
     rentDevice() {
-      var info = { 'device_id': this.selectedRentDeviceId,
-        'user_id': this.user_id,
-        'expire_time': this.expireTime }
-      this.$axios.post('api/device/rent_device', info).then(r => {
-        this.dialogRentFormVisible = true
-        this.listRentable = r.data
-        console.log(r.data)
-        if (r.data === 0) {
-          this.$message.success('租用成功')
-          this.dialogConfirmRentFormVisible = false
-          this.dialogRentFormVisible = false
-          this.handleReFresh()
-        } else {
-          this.$message.error('租用失败')
+      this.$refs['dataForm'].validate((valid) => {
+        if (valid) {
+          var info = { 'device_id': this.selectedRentDeviceId,
+            'user_id': this.user_id,
+            'expire_time': this.expireTime }
+          this.$axios.post('api/device/rent_device', info).then(r => {
+            this.dialogRentFormVisible = true
+            this.listRentable = r.data
+            console.log(r.data)
+            if (r.data === 0) {
+              this.$message.success('租用成功')
+              this.dialogConfirmRentFormVisible = false
+              this.dialogRentFormVisible = false
+              this.handleReFresh()
+            } else {
+              this.$message.error('租用失败')
+            }
+          })
         }
       })
     },
@@ -693,5 +752,16 @@ export default {
             overflow-y: auto;
         }
     }
+}
+.filter-container-1 {
+  display: none;
+}
+@media screen and (max-width: 820px) {
+  .filter-container {
+    display: none;
+  }
+  .filter-container-1 {
+    display: block;
+  }
 }
 </style>

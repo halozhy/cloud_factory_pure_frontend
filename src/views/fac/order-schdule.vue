@@ -42,8 +42,8 @@
 
     <el-dialog title="添加" :visible.sync="dialogFormVisible" append-to-body>
 
-      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="150px" style="width: 50%; margin-left:50px;">
-        <el-form-item label="设备">
+      <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" style="width: 50%; margin-left:50px;">
+        <el-form-item label="设备" prop="device_id">
           <el-select v-model="temp.device_id" placeholder="请选择">
             <el-option
               v-for="item in device_all"
@@ -53,7 +53,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="选择开始时间">
+        <el-form-item label="选择开始时间" prop="start_time">
           <el-date-picker
             v-model="temp.start_time"
             type="datetime"
@@ -61,7 +61,7 @@
             :picker-options="pickerOptions"
           />
         </el-form-item>
-        <el-form-item label="选择结束时间">
+        <el-form-item label="选择结束时间" prop="end_time">
           <el-date-picker
             v-model="temp.end_time"
             type="datetime"
@@ -83,7 +83,7 @@
 
     <el-dialog title="更改" :visible.sync="dialogUpdateFormVisible" append-to-body>
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="150px" style="width: 50%; margin-left:50px;">
-        <el-form-item label="设备">
+        <el-form-item label="设备" prop="device_id">
           <el-select v-model="temp.device_id" placeholder="请选择">
             <el-option
               v-for="item in device_all"
@@ -93,7 +93,7 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="选择开始时间">
+        <el-form-item label="选择开始时间" prop="start_time">
           <el-date-picker
             v-model="temp.start_time"
             type="datetime"
@@ -101,7 +101,7 @@
             :picker-options="pickerOptions"
           />
         </el-form-item>
-        <el-form-item label="选择结束时间">
+        <el-form-item label="选择结束时间" prop="end_time">
           <el-date-picker
             v-model="temp.end_time"
             type="datetime"
@@ -128,12 +128,35 @@
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import jsCookie from 'js-cookie'
+import router from '@/router'
 
 export default {
   name: 'OrderSchedule',
   directives: { waves },
   props: { orderId: { type: Number, required: true }, userId: { type: String, required: true }},
   data() {
+    var checkTime = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error('开始时间不得为空'))
+      } else {
+        callback()
+      }
+    }
+    var checkTime2 = (rule, value, callback) => {
+      if (!value) {
+        callback(new Error('结束时间不得为空'))
+      } else {
+        callback()
+      }
+    }
+    var checkdevice = (rule, value, callback) => {
+      console.log(value)
+      if (value === '') {
+        callback(new Error('请选择设备'))
+      } else {
+        callback()
+      }
+    }
     return {
       order_id: '',
       device_all: [{
@@ -187,9 +210,18 @@ export default {
       selectedRentDeviceId: '',
       pvData: [],
       rules: {
-        type: [{ required: true, message: 'type is required', trigger: 'change' }],
-        timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
-        title: [{ required: true, message: 'title is required', trigger: 'blur' }]
+        // type: [{ required: true, message: 'type is required', trigger: 'change' }],
+        // timestamp: [{ type: 'date', required: true, message: 'timestamp is required', trigger: 'change' }],
+        // title: [{ required: true, message: 'title is required', trigger: 'blur' }]
+        device_id: [
+          { validator: checkdevice, trigger: 'change' }
+        ],
+        start_time: [
+          { validator: checkTime, trigger: 'blur' }
+        ],
+        end_time: [
+          { validator: checkTime2, trigger: 'blur' }
+        ]
       },
       downloadLoading: false
     }
@@ -279,28 +311,36 @@ export default {
         this.resetTemp()
         this.device_all = r.data
         this.dialogFormVisible = true
+        this.$nextTick(() => {
+          this.$refs['dataForm'].clearValidate()
+        })
       })
     },
     createData() {
       this.temp.user_id = this.user_id
       this.temp.order_id = this.orderId
       console.log(this.temp)
-      this.$axios.post('/api/schedule/add', this.temp).then(r => {
-        console.log(r)
-        if (r.data === -2) {
-          this.$message.error('表单未填写完整')
-        } else if (r.data === -5) {
-          this.$message.error('开始时间不能晚于结束时间')
-        } else if (r.data === -6) {
-          this.$message.error('结束时间或开始时间不能晚于收货截止时间')
-        } else if (r.data === -7) {
-          this.$message.error('排产时段和已有冲突')
-        } else if (r.data === 0) {
-          this.$message.success('添加成功')
-          this.dialogFormVisible = false
-          this.handleReFresh()
+      this.$refs['dataForm'].validate((valid)=>{
+        if (valid) {
+          this.$axios.post('/api/schedule/add', this.temp).then(r => {
+            console.log(r)
+            if (r.data === -2) {
+              this.$message.error('表单未填写完整')
+            } else if (r.data === -5) {
+              this.$message.error('开始时间不能晚于结束时间')
+            } else if (r.data === -6) {
+              this.$message.error('结束时间或开始时间不能晚于收货截止时间')
+            } else if (r.data === -7) {
+              this.$message.error('排产时段和已有冲突')
+            } else if (r.data === 0) {
+              this.$message.success('添加成功')
+              this.dialogFormVisible = false
+              this.handleReFresh()
+            }
+          })
         }
       })
+
       console.log(this.temp)
     },
     handleUpdate(row) {
@@ -407,18 +447,20 @@ export default {
         }}).then(r => {
           // 0 ok
           if (r.data === 0) {
+            // eslint-disable-next-line no-undef
+            location.reload()
             this.$message.success('成功')
-            this.handleReFresh()
           } else if (r.data === -1) {
+            // eslint-disable-next-line no-undef
+            location.reload()
             this.$message.error('无法完工，没有排产计划')
-            this.handleReFresh()
           }
         })
       }).catch(() => {
-        // this.$message({
-        //   type: 'info',
-        //   message: '已取消删除'
-        // })
+        this.$message({
+          type: 'info',
+          message: '已取消完工'
+        })
       })
     },
     handleOpen(row) {
@@ -535,5 +577,16 @@ export default {
             overflow-y: auto;
         }
     }
+}
+.filter-container-1 {
+   display: none;
+ }
+@media screen and (max-width: 820px) {
+  .filter-container {
+    display: none;
+  }
+  .filter-container-1 {
+    display: block;
+  }
 }
 </style>

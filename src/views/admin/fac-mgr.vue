@@ -2,9 +2,9 @@
   <div class="app-container">
     <div class="filter-container" style="margin-bottom: 1rem">
       <el-input v-model="listQuery.id" placeholder="ID" style="width: 150px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.name" placeholder="工厂名称" style="width: 150px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.describe" placeholder="工厂描述" style="width: 350px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+      <el-input v-model="listQuery.name" placeholder="工厂名称" style="width: 150px;margin-left:10px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.describe" placeholder="工厂描述" style="width: 350px;margin-left:10px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-button v-waves class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-search" @click="handleFilter">
         查找
       </el-button>
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-refresh" @click="handleReFresh">
@@ -12,6 +12,27 @@
       </el-button>
     </div>
 
+    <div class="filter-container-1" style="margin-bottom: 1rem;">
+      <el-row :gutter="10">
+        <el-col :span="8">
+          <el-input v-model="listQuery.id" placeholder="ID" class="filter-item" @keyup.enter.native="handleFilter" />
+        </el-col>
+        <el-col :span="8">
+          <el-input v-model="listQuery.name" placeholder="工厂名称" class="filter-item" @keyup.enter.native="handleFilter" />
+        </el-col>
+        <el-col :span="8">
+          <el-input v-model="listQuery.describe" placeholder="工厂描述" class="filter-item" @keyup.enter.native="handleFilter" />
+        </el-col>
+      </el-row>
+      <el-row style="margin-top:1rem; margin-left:0px">
+        <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+          查找
+        </el-button>
+        <el-button class="filter-item" type="primary" icon="el-icon-refresh" @click="handleReFresh">
+          重置
+        </el-button>
+      </el-row>
+    </div>
     <el-table
       :key="tableKey"
       v-loading="listLoading"
@@ -24,22 +45,22 @@
       <template slot="empty">
         暂无数据
       </template>
-      <el-table-column label="ID" prop="id" sortable align="center" min-width="80">
+      <el-table-column label="ID" prop="id" sortable align="center" >
         <template slot-scope="{row}">
           <span>{{ row.id }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="工厂名称" min-width="100px" align="center">
+      <el-table-column label="工厂名称"  align="center">
         <template slot-scope="{row}">
           <span>{{ row.name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="工厂描述" min-width="200px" align="center">
+      <el-table-column label="工厂描述"  align="center">
         <template slot-scope="{row}">
           <span>{{ row.describe }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="工厂状态" min-width="50px" align="center">
+      <el-table-column label="工厂状态"  align="center">
         <template slot-scope="{row}">
           <span>
             <el-tag v-if="row.state === '关停'" type="danger">{{ row.state }}</el-tag>
@@ -47,7 +68,7 @@
           </span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" min-width="150px" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center"  class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
           <el-button v-if="row.state === '关停'" size="mini" type="primary" @click="handleOpen(row)">
             开启
@@ -59,7 +80,8 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination class="filter-container" v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination class="filter-container-1" v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" style="overflow:scroll" @pagination="getList" />
 
   </div>
 </template>
@@ -157,6 +179,9 @@ export default {
       // this.list = response.data.items
 
       this.$axios.post('/api/fac/list', this.listQuery).then(r => {
+        if (r.data.data.length === 0){
+          this.$message.error('无此工厂信息，请重新输入');
+        }
         this.list = r.data.data
 
         // this.list = this.temp
@@ -342,29 +367,51 @@ export default {
     },
     handleOpen(row) {
       // alert(row.id)
-      this.$axios.post('/api/fac/open', { id: row.id }).then(r => {
-        if (r.data === -2) {
-          this.$message.error('此工厂已开启')
-        } else if (r.data === -1) {
-          this.$message.error('无此工厂')
-        } else if (r.data === 0) {
-          this.$message.success('开启成功')
-          this.handleReFresh()
-        }
-      })
+      this.$confirm('您确定开启工厂吗?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$axios.post('/api/fac/open', { id: row.id }).then(r => {
+          if (r.data === -2) {
+            this.$message.error('此工厂已开启')
+          } else if (r.data === -1) {
+            this.$message.error('无此工厂')
+          } else if (r.data === 0) {
+            this.$message.success('开启成功')
+            this.handleReFresh()
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消开启'
+        });
+      });
     },
     handleShutdown(row, index) {
       // alert(row.id)
-      this.$axios.post('/api/fac/shutdown', { id: row.id }).then(r => {
-        if (r.data === -2) {
-          this.$message.error('此工厂已关停')
-        } else if (r.data === -1) {
-          this.$message.error('无此工厂')
-        } else if (r.data === 0) {
-          this.$message.success('关停成功')
-          this.handleReFresh()
-        }
-      })
+      this.$confirm('您确定关停工厂吗?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$axios.post('/api/fac/shutdown', { id: row.id }).then(r => {
+          if (r.data === -2) {
+            this.$message.error('此工厂已关停')
+          } else if (r.data === -1) {
+            this.$message.error('无此工厂')
+          } else if (r.data === 0) {
+            this.$message.success('关停成功')
+            this.handleReFresh()
+          }
+        })
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消关停'
+        });
+      });
     },
     handleFetchPv(pv) {
       // fetchPv(pv).then(response => {
@@ -402,3 +449,17 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.filter-container-1 {
+  display: none;
+}
+@media screen and (max-width: 820px) {
+  .filter-container {
+    display: none;
+  }
+  .filter-container-1 {
+    display: block;
+  }
+}
+</style>
