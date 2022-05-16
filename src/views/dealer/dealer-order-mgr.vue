@@ -577,6 +577,9 @@ export default {
       this.listQuery.user_id = this.user_id
       this.$axios.post('/api/order/list_dealer', this.listQuery).then(r => {
         this.list = r.data.data
+        if (r.data.data.length === 0) {
+          this.$message.error('未查询到订单信息')
+        }
         console.log(r.data)
         this.total = r.data.count
         this.listLoading = false

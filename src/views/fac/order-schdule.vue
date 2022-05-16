@@ -372,22 +372,27 @@ export default {
 
       this.temp.start_time = sd.getTime()
       this.temp.end_time = ed.getTime()
-      this.$axios.post('/api/schedule/update', this.temp).then(r => {
-        // console.log(r)
-        if (r.data === -2) {
-          this.$message.error('表单未填写完整')
-        } else if (r.data === -5) {
-          this.$message.error('开始时间不能晚于结束时间')
-        } else if (r.data === -6) {
-          this.$message.error('结束时间或开始时间不能晚于收货截止时间')
-        } else if (r.data === -7) {
-          this.$message.error('排产时段和已有冲突')
-        } else if (r.data === 0) {
-          this.$message.success('更新成功')
-          this.dialogUpdateFormVisible = false
-          this.handleReFresh()
+      this.$refs['dataForm'].validate((valid)=>{
+        if (valid) {
+          this.$axios.post('/api/schedule/update', this.temp).then(r => {
+            // console.log(r)
+            if (r.data === -2) {
+              this.$message.error('表单未填写完整')
+            } else if (r.data === -5) {
+              this.$message.error('开始时间不能晚于结束时间')
+            } else if (r.data === -6) {
+              this.$message.error('结束时间或开始时间不能晚于收货截止时间')
+            } else if (r.data === -7) {
+              this.$message.error('排产时段和已有冲突')
+            } else if (r.data === 0) {
+              this.$message.success('更新成功')
+              this.dialogUpdateFormVisible = false
+              this.handleReFresh()
+            }
+          })
         }
       })
+
       // this.$message.info('he')
       // this.$refs['dataForm'].validate((valid) => {
       //   if (valid) {

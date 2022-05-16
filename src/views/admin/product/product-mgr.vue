@@ -301,7 +301,9 @@ export default {
 
       this.$axios.post('/api/prod/list', this.listQuery).then(r => {
         this.list = r.data.data
-
+        if (r.data.data.length === 0) {
+          this.$message.error('未查询到产品信息')
+        }
         // this.list = this.temp
         console.log(r.data)
         this.total = r.data.count
