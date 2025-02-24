@@ -15,7 +15,10 @@ import router from './router'
 import '@/icons' // icon
 import '@/permission' // permission control
 
-import axios from 'axios'
+// import axios from 'axios'
+
+import axios from './mock'; // 引入 Mock 后的axios
+
 Vue.prototype.$axios = axios // 全局注册，使用方法为:this.$axios
 
 Vue.prototype.pageList = function(page, limit, list) {
