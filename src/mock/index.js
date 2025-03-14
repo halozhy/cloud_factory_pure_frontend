@@ -1,9 +1,11 @@
 // src/mock/index.js
 import axios from 'axios'
+import {controller} from '@/mock/mockController.js'
 
-// 模拟数据
+// 模拟静态数据
 const mockData = {
   '/api/user/loginNew': { data: 0, userId: 1, username: 'admin', type: '超级管理员' },
+  '/api/user/list': require('@/mock/user/list.json'),
   '/api/user': { id: 1, name: 'Mock User' },
   '/api/list': [{ id: 1, title: 'Mock Item 1' }, { id: 2, title: 'Mock Item 2' }]
 }
@@ -21,14 +23,15 @@ axios.interceptors.request.use(config => {
 })
 
 // 在 response 拦截器中返回mock数据，此时在error里面对error进行mock处理即可
-axios.interceptors.response.use((response) => response, error => {
+axios.interceptors.response.use((response) => response, async error => {
   const config = error.config
   const url = config.url
   // 如果请求的 URL 在 mockData 中存在，则返回模拟数据
   if (mockData[url]) {
     console.log('in response mock', url)
+    const controller_result = await controller(url, config)
     return Promise.resolve({
-      data: mockData[url],
+      data: controller_result == null ? mockData[url] : controller_result,
       status: 200,
       statusText: 'OK',
       config: config,

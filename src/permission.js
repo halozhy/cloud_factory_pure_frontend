@@ -29,7 +29,7 @@ router.beforeEach(async(to, from, next) => {
 
   if (hasToken) {
     if (to.path === '/login') {
-    //   alert('already')
+      // alert('already')
       // if is logged in, redirect to the home page
       next({ path: '/' })
       NProgress.done()
@@ -51,6 +51,10 @@ router.beforeEach(async(to, from, next) => {
         } else if (hasToken === '经销商') {
           router.addRoutes(dealerRoutes)
           router.options.routes = router.options.routes.concat(dealerRoutes)
+        } else {
+          // Cookie中type不属于上述三者，直接remove掉type，防止循环进入type判断
+          console.log('bad type value');
+          Cookies.remove('type')
         }
         // router.options.routes = newRoutes
         // sessionStorage.setItem('loaded', 'true')
@@ -79,6 +83,7 @@ router.beforeEach(async(to, from, next) => {
     //   }
     // }
   } else {
+    NProgress.done()
     /* has no token*/
     // router.addRoutes(baseRoutes)
     // router.options.routes = baseRoutes

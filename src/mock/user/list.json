@@ -1,0 +1,170 @@
+{
+    "data": [
+        {
+            "id": 1,
+            "username": "admin",
+            "password": "admin",
+            "name": "admin2",
+            "contact": "admin3",
+            "type": "超级管理员",
+            "fac_id": null,
+            "fac_name": null,
+            "fac_describe": null
+        },
+        {
+            "id": 12,
+            "username": "113",
+            "password": "12",
+            "name": "name",
+            "contact": "con",
+            "type": "云工厂管理员",
+            "fac_id": 22,
+            "fac_name": "fac_name223",
+            "fac_describe": "asff"
+        },
+        {
+            "id": 13,
+            "username": "11",
+            "password": "22",
+            "name": "name",
+            "contact": "con",
+            "type": "经销商",
+            "fac_id": null,
+            "fac_name": null,
+            "fac_describe": null
+        },
+        {
+            "id": 14,
+            "username": "114",
+            "password": "22",
+            "name": "name",
+            "contact": "con",
+            "type": "云工厂管理员",
+            "fac_id": 23,
+            "fac_name": "fac_name23",
+            "fac_describe": "desc"
+        },
+        {
+            "id": 20,
+            "username": "acco",
+            "password": "pass",
+            "name": "name",
+            "contact": "contact",
+            "type": "云工厂管理员",
+            "fac_id": 28,
+            "fac_name": "fac_name",
+            "fac_describe": "desc"
+        },
+        {
+            "id": 21,
+            "username": "account",
+            "password": "pass",
+            "name": "name",
+            "contact": "contact",
+            "type": "云工厂管理员",
+            "fac_id": 29,
+            "fac_name": "facname",
+            "fac_describe": "desc"
+        },
+        {
+            "id": 22,
+            "username": "1141",
+            "password": "22",
+            "name": "name",
+            "contact": "con",
+            "type": "云工厂管理员",
+            "fac_id": 30,
+            "fac_name": "fac_name",
+            "fac_describe": "desc"
+        },
+        {
+            "id": 23,
+            "username": "name123",
+            "password": "123",
+            "name": "1233",
+            "contact": "fdas1",
+            "type": "云工厂管理员",
+            "fac_id": 34,
+            "fac_name": "fac_name11",
+            "fac_describe": "123"
+        },
+        {
+            "id": 31,
+            "username": "45",
+            "password": "435",
+            "name": "44",
+            "contact": "44",
+            "type": "云工厂管理员",
+            "fac_id": 1,
+            "fac_name": "测试工厂",
+            "fac_describe": "测试工厂描述"
+        },
+        {
+            "id": 32,
+            "username": "23",
+            "password": "2345",
+            "name": "4235",
+            "contact": "2345",
+            "type": "云工厂管理员",
+            "fac_id": 42,
+            "fac_name": "2435",
+            "fac_describe": "34252"
+        },
+        {
+            "id": 33,
+            "username": "sad",
+            "password": "asd",
+            "name": "asd",
+            "contact": "sad1",
+            "type": "经销商",
+            "fac_id": null,
+            "fac_name": null,
+            "fac_describe": null
+        },
+        {
+            "id": 34,
+            "username": "dsftest",
+            "password": "sd",
+            "name": "dsag",
+            "contact": "asdf",
+            "type": "经销商",
+            "fac_id": null,
+            "fac_name": null,
+            "fac_describe": null
+        },
+        {
+            "id": 42,
+            "username": "1131",
+            "password": "113",
+            "name": "name",
+            "contact": "con",
+            "type": "云工厂管理员",
+            "fac_id": 46,
+            "fac_name": "adsf",
+            "fac_describe": "detail"
+        },
+        {
+            "id": 43,
+            "username": "admin1",
+            "password": "admin",
+            "name": "admin",
+            "contact": "admin",
+            "type": "经销商",
+            "fac_id": null,
+            "fac_name": null,
+            "fac_describe": null
+        },
+        {
+            "id": 46,
+            "username": "张岩",
+            "password": "123",
+            "name": "张岩",
+            "contact": "123",
+            "type": "经销商",
+            "fac_id": null,
+            "fac_name": null,
+            "fac_describe": null
+        }
+    ],
+    "count": 15
+}

@@ -62,13 +62,24 @@
             @click.native.prevent="handleRegister"
           >点我注册</el-link>
         </div>
-        <div>
+        <div style="text-align: center;">
           <el-button
             :loading="loading"
             type="primary"
-            style="width: 100%; margin-bottom:15%; margin-top:5%"
+            style="width: 100%; margin-bottom:5%; margin-top:5%"
             @click.native.prevent="handleLogin"
           >登录</el-button>
+
+          <el-button
+            :loading="loading"
+            type="primary"
+            style="margin-left: 0%; margin-bottom:3%"
+            @click.native.prevent="handleCleanData"
+          >清除本地数据</el-button>
+        </div>
+
+        <div>
+          
         </div>
 
       <!-- <div class="tips">
@@ -83,6 +94,7 @@
 <script>
 import Cookie from 'js-cookie'
 import { Message } from 'element-ui'
+import { clean } from '@/mock/clean.js'
 // import { setRouterByType } from '@/router'
 
 export default {
@@ -234,6 +246,9 @@ export default {
       //     return false
       //   }
       // })
+    },
+    handleCleanData() {
+      clean()
     }
   }
 }
